@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0c0b0e">
+<title>Chạm Là Hiện</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800;900&family=Dancing+Script:wght@600;700&display=swap">
+<style>
+/* Bố cục: một màn điện thoại. Người nhận chạm móc khoá → vòng sáng bung ra → thẻ ảnh trượt lên → lời nhắn hiện từng chữ.
+   Tab thứ hai cho người tặng tự viết lời nhắn + chọn ảnh rồi xem thử. Một thế giới tối duy nhất, nét sáng cam kiểu PEAKER. */
+:root{
+  --bg:#0c0b0e; --panel:#16141a; --line:#2a2630; --line-hi:#3d3746;
+  --fg:#f2ece4; --soft:#aea6a2; --muted:#6f6870;
+  --accent:#ff7a1a; --accent-ink:#1a0d03; --accent-dim:rgba(255,122,26,.18); --paper:#fbf6ee; --paper-ink:#2a2420;
+  --font:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --hand:"Dancing Script","Segoe Script",cursive;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+*,*::before,*::after{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:440px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px;display:flex;flex-direction:column;gap:16px;min-height:100%}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.brand{font-weight:900;letter-spacing:.2em;font-size:12px}
+.brand span{color:var(--accent)}
+.tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tabs button{appearance:none;border:0;background:transparent;color:var(--soft);font:inherit;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,label.file:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---- màn người nhận ---- */
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:14px;min-height:560px}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.intro{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding-top:40px}
+.intro .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--soft);font-weight:700}
+.intro h1{margin:0;font-size:28px;font-weight:900;line-height:1.2;text-wrap:balance}
+.intro h1 em{font-style:normal;color:var(--accent)}
+.tap{margin-top:215px;appearance:none;border:1.5px solid var(--accent);background:var(--accent-dim);color:var(--fg);font:inherit;font-weight:800;font-size:16px;padding:14px 26px;border-radius:999px;cursor:pointer;box-shadow:0 0 28px var(--accent-dim)}
+.tap:disabled{opacity:.45;cursor:wait}
+.hint{font-size:12px;color:var(--muted)}
+.card{position:relative;z-index:1;width:100%;background:var(--paper);color:var(--paper-ink);border-radius:18px;padding:14px 14px 18px;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,122,26,.35),0 0 40px rgba(255,122,26,.25);transform:translateY(40px) scale(.96);opacity:0;transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .6s;margin-top:24px}
+.card.show{transform:none;opacity:1}
+.photo{width:100%;aspect-ratio:4/5;max-width:100%;border-radius:12px;overflow:hidden;background:#1b1820;display:block}
+.photo img,.photo canvas{width:100%;height:100%;object-fit:cover;display:block}
+.to{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8c8178;font-weight:800;margin:14px 2px 2px}
+.msg{font-family:var(--hand);font-size:26px;line-height:1.3;min-height:68px;margin:0 2px;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg .cur{display:inline-block;width:2px;height:1em;background:var(--accent);vertical-align:-3px;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.sig{text-align:right;font-family:var(--hand);font-size:22px;color:#b5480a;margin:6px 4px 0;opacity:0;transition:opacity .6s}
+.sig.show{opacity:1}
+.after{position:relative;z-index:1;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;opacity:0;transition:opacity .6s}
+.after.show{opacity:1}
+.ghost{appearance:none;background:transparent;border:1px solid var(--line-hi);color:var(--fg);font:inherit;font-size:13px;border-radius:999px;padding:9px 14px;cursor:pointer;text-decoration:none}
+.ghost.acc{border-color:var(--accent);color:var(--accent)}
+
+/* ---- màn người tặng ---- */
+.form{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.form h2{margin:0;font-size:20px;font-weight:900}
+.form p{margin:0;color:var(--soft);font-size:13px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.field input,.field textarea{background:var(--bg);border:1px solid var(--line-hi);border-radius:10px;color:var(--fg);font:inherit;padding:11px 12px;width:100%;min-width:0}
+.field textarea{min-height:96px;resize:vertical}
+.count{font-size:12px;color:var(--muted);text-align:right}
+label.file{display:flex;align-items:center;gap:12px;border:1px dashed var(--line-hi);border-radius:12px;padding:10px;cursor:pointer}
+label.file input{position:absolute;opacity:0;width:1px;height:1px}
+.thumb{width:56px;height:70px;border-radius:8px;background:#1b1820;overflow:hidden;flex:none;display:grid;place-items:center;color:var(--muted);font-size:22px}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.btn{appearance:none;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:900;font-size:16px;padding:14px;cursor:pointer;box-shadow:0 0 24px var(--accent-dim)}
+.note{font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
+@media (prefers-reduced-motion:reduce){.card{transition:none}.msg .cur{animation:none}}
+.lost{position:relative;z-index:1;text-align:center;color:var(--soft);padding-top:120px}
+.lost b{display:block;color:var(--fg);font-size:20px;margin-bottom:6px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">PEAKER<span>.</span> TAP</div>
+    <div class="tabs" role="tablist" id="tabs">
+      <button role="tab" id="tRecv" aria-selected="true">Người nhận</button>
+      <button role="tab" id="tSend" aria-selected="false">Người tặng</button>
+    </div>
+  </header>
+
+  <!-- NGƯỜI NHẬN: đây là màn hiện ra khi chạm móc khoá vào điện thoại -->
+  <section id="recv" class="stage">
+    <canvas id="fx" aria-hidden="true"></canvas>
+    <div class="intro" id="intro">
+      <div class="kicker">Có người gửi bạn một lời nhắn</div>
+      <h1>Bạn vừa chạm vào<br>một <em>bí mật</em>.</h1>
+      <button class="tap" id="open">Mở lời nhắn</button>
+      <div class="hint">Lời nhắn này chỉ dành cho bạn.</div>
+    </div>
+    <div class="lost" id="lost" hidden><b>Chưa tìm thấy lời nhắn</b>Móc khoá này chưa được gắn lời nhắn, hoặc mạng đang chậm — thử chạm lại nhé.</div>
+    <article class="card" id="card" hidden>
+      <div class="photo" id="photo"></div>
+      <div class="to" id="to"></div>
+      <p class="msg" id="msg"></p>
+      <div class="sig" id="sig"></div>
+    </article>
+    <div class="after" id="after" hidden>
+      <a class="ghost acc" id="song" href="#" target="_blank" rel="noopener" hidden>♪ Nghe bài hát người ấy chọn</a>
+      <button class="ghost" id="replay">Xem lại từ đầu</button>
+    </div>
+  </section>
+
+  <!-- NGƯỜI TẶNG: tự viết, không cần nhắn tin với shop -->
+  <section id="send" hidden>
+    <div class="form">
+      <h2>Viết lời nhắn cho móc khoá</h2>
+      <p>Viết xong bấm "Xem thử" để thấy đúng như người nhận sẽ thấy khi chạm.</p>
+      <div class="field"><label for="fTo">Gửi tới</label><input id="fTo" maxlength="30" value="Gửi cậu"></div>
+      <div class="field"><label for="fMsg">Lời nhắn</label><textarea id="fMsg" maxlength="220">Cảm ơn vì đã luôn ở đây những lúc tớ tệ nhất. Năm nay tớ không giỏi nói, nên tớ để lời này trong móc khoá.</textarea><div class="count" id="cnt"></div></div>
+      <div class="field"><label for="fSig">Ký tên</label><input id="fSig" maxlength="30" value="— một người bí mật"></div>
+      <div class="field"><label>Ảnh (không bắt buộc)</label>
+        <label class="file" for="fImg"><span class="thumb" id="thumb">＋</span><span><b>Chọn ảnh</b><br><span class="note" style="text-align:left">Ảnh đôi, ảnh kỷ niệm. Ảnh này cũng là ảnh in lên móc.</span></span><input type="file" id="fImg" accept="image/*"></label>
+      </div>
+      <div class="field"><label for="fSong">Link bài hát (không bắt buộc)</label><input id="fSong" placeholder="Dán link YouTube / Spotify" inputmode="url"></div>
+      <button class="btn" id="preview">Xem thử</button>
+      <div class="note">Bản thử: ảnh và lời nhắn chỉ nằm trên máy bạn, chưa gửi đi đâu.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css=getComputedStyle(document.documentElement);
+const ACC=css.getPropertyValue('--accent').trim()||'#ff7a1a', FG=css.getPropertyValue('--fg').trim()||'#f2ece4';
+
+// dữ liệu mẫu (người tặng có thể thay ở tab bên cạnh)
+let data={to:'Gửi cậu',msg:$('fMsg').value,sig:'— một người bí mật',img:null,song:''};
+
+/* ---------- tab ---------- */
+function tab(which){
+  const r=which==='recv';
+  $('recv').hidden=!r;$('send').hidden=r;
+  $('tRecv').setAttribute('aria-selected',r);$('tSend').setAttribute('aria-selected',!r);
+  if(r)reset();
+}
+$('tRecv').onclick=()=>tab('recv');$('tSend').onclick=()=>tab('send');
+
+/* ---------- hiệu ứng vòng sáng ---------- */
+const cv=$('fx'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1,burstAt=-1,t0=performance.now();
+function size(){dpr=Math.min(2,devicePixelRatio||1);W=cv.clientWidth;H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr}
+addEventListener('resize',size);
+const sparks=Array.from({length:70},()=>({a:Math.random()*Math.PI*2,v:.4+Math.random()*1.2,r:1+Math.random()*1.6}));
+function frame(now){
+  if(!W)size();
+  const t=(now-t0)/1000;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  const cx=W/2,cy=burstAt<0?H*.52:H*.30;
+  const since=burstAt<0?-1:(now-burstAt)/1000;
+  // vòng đồng tâm nhịp thở (trước khi mở) / bung ra (khi mở)
+  for(let i=0;i<7;i++){
+    let r,alpha;
+    if(since<0){const p=Math.sin(t*1.8-i*.55)*.5+.5;r=28+i*20+p*3;alpha=(.15+.45*p)*(1-i/8)}
+    else{r=28+i*20+since*260*(1+i*.15);alpha=Math.max(0,.8-since*.7)*(1-i/9)}
+    ctx.beginPath();ctx.ellipse(cx,cy,r,r*.42,0,0,Math.PI*2);
+    ctx.strokeStyle=ACC;ctx.globalAlpha=alpha;ctx.lineWidth=1.4;ctx.shadowColor=ACC;ctx.shadowBlur=14;ctx.stroke();
+  }
+  ctx.shadowBlur=0;
+  // tia lửa bắn ra khi mở
+  if(since>=0&&since<2.2){for(const s of sparks){const d=since*s.v*170;ctx.globalAlpha=Math.max(0,1-since/2.2);ctx.fillStyle=ACC;ctx.beginPath();ctx.arc(cx+Math.cos(s.a)*d,cy+Math.sin(s.a)*d*.6,s.r,0,Math.PI*2);ctx.fill()}}
+  // móc khoá ở giữa (trước khi mở)
+  if(since<0){
+    ctx.globalAlpha=1;ctx.strokeStyle=FG;ctx.lineWidth=1.6;ctx.shadowColor=ACC;ctx.shadowBlur=10;
+    roundRect(cx-26,cy-34,52,64,10);ctx.stroke();                 // thân mica
+    ctx.beginPath();ctx.arc(cx,cy-46,9,0,Math.PI*2);ctx.stroke();  // vòng móc
+    ctx.strokeStyle=ACC;ctx.beginPath();ctx.arc(cx,cy-2,10,0,Math.PI*2);ctx.stroke(); // chip
+    for(let k=1;k<=3;k++){const a=(Math.sin(t*3-k)*.5+.5);ctx.globalAlpha=a;ctx.beginPath();ctx.arc(cx,cy-2,10+k*7,-.9,.9);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy-2,10+k*7,Math.PI-.9,Math.PI+.9);ctx.stroke()}
+  }
+  ctx.globalAlpha=1;ctx.shadowBlur=0;
+  if(!reduce)requestAnimationFrame(frame);
+}
+function kick(){if(reduce)requestAnimationFrame(frame)}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+
+/* ---------- ảnh mẫu: hai người que nắm tay, vẽ bằng nét sáng ---------- */
+function samplePhoto(el){
+  const c=document.createElement('canvas');c.width=800;c.height=1000;const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,1000);g.addColorStop(0,'#1f1a24');g.addColorStop(1,'#0e0c11');x.fillStyle=g;x.fillRect(0,0,800,1000);
+  x.strokeStyle=ACC;x.shadowColor=ACC;x.lineCap='round';
+  for(let i=0;i<6;i++){x.globalAlpha=.7-i*.1;x.lineWidth=3;x.shadowBlur=20;x.beginPath();x.ellipse(400,820,120+i*55,(120+i*55)*.3,0,0,Math.PI*2);x.stroke()}
+  x.globalAlpha=1;x.lineWidth=7;x.shadowBlur=26;
+  const fig=(cx)=>{x.beginPath();x.arc(cx,430,58,0,Math.PI*2);x.stroke();x.beginPath();x.moveTo(cx,488);x.lineTo(cx,650);x.moveTo(cx,650);x.lineTo(cx-45,800);x.moveTo(cx,650);x.lineTo(cx+45,800);x.stroke()};
+  fig(290);fig(510);
+  x.beginPath();x.moveTo(290,520);x.lineTo(230,610);x.moveTo(510,520);x.lineTo(570,610);x.moveTo(290,520);x.lineTo(400,590);x.lineTo(510,520);x.stroke(); // nắm tay
+  x.lineWidth=5;x.shadowBlur=10;
+  [[270,425],[310,425],[490,425],[530,425]].forEach(([a,b])=>{x.beginPath();x.arc(a,b,10,Math.PI*.15,Math.PI*.85);x.stroke()});
+  x.beginPath();x.arc(290,452,16,Math.PI*.2,Math.PI*.8);x.stroke();x.beginPath();x.arc(510,452,16,Math.PI*.2,Math.PI*.8);x.stroke();
+  x.fillStyle=ACC;x.shadowBlur=30;x.font='bold 70px sans-serif';x.textAlign='center';x.fillText('♥',400,330);
+  el.innerHTML='';el.appendChild(c);
+}
+
+/* ---------- mở lời nhắn ---------- */
+let typing=null;
+function reset(){
+  clearInterval(typing);burstAt=-1;t0=performance.now();
+  $('intro').hidden=false;$('card').hidden=true;$('card').classList.remove('show');
+  $('after').hidden=true;$('after').classList.remove('show');$('sig').classList.remove('show');
+  kick();
+}
+function open(){
+  $('intro').hidden=true;burstAt=performance.now();kick();
+  const card=$('card');card.hidden=false;
+  if(data.img){$('photo').innerHTML='';const im=new Image();im.src=data.img;im.alt='Ảnh người tặng gửi';$('photo').appendChild(im)}else samplePhoto($('photo'));
+  $('to').textContent=data.to;$('sig').textContent=data.sig;
+  const song=$('song');song.hidden=!data.song;if(data.song)song.href=data.song;
+  setTimeout(()=>card.classList.add('show'),reduce?0:250);
+  const m=$('msg');m.textContent='';const cur=document.createElement('span');cur.className='cur';
+  const txt=data.msg;let i=0;
+  if(reduce){m.textContent=txt;done();return}
+  m.appendChild(cur);
+  setTimeout(()=>{typing=setInterval(()=>{i++;m.textContent=txt.slice(0,i);m.appendChild(cur);if(i>=txt.length){clearInterval(typing);setTimeout(()=>{cur.remove();done()},400)}},45)},900);
+  function done(){$('sig').classList.add('show');$('after').hidden=false;setTimeout(()=>$('after').classList.add('show'),50)}
+}
+$('open').onclick=open;$('replay').onclick=reset;
+
+/* ---------- người tặng ---------- */
+function cnt(){$('cnt').textContent=$('fMsg').value.length+'/220'}
+$('fMsg').addEventListener('input',cnt);cnt();
+$('fImg').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];if(!f)return;
+  const rd=new FileReader();rd.onload=()=>{data.img=rd.result;$('thumb').innerHTML='';const im=new Image();im.src=rd.result;im.alt='';$('thumb').appendChild(im)};rd.readAsDataURL(f);
+});
+$('preview').onclick=()=>{
+  data.to=$('fTo').value.trim()||'Gửi bạn';data.msg=$('fMsg').value.trim()||'…';data.sig=$('fSig').value.trim();
+  const s=$('fSong').value.trim();data.song=/^https?:\/\//i.test(s)?s:'';
+  tab('recv');setTimeout(open,reduce?0:700);
+};
+
+size();requestAnimationFrame(frame);
+
+/* ---------- móc thật: ?k=MÃ → đọc m/MÃ.json (chỉ màn người nhận) ---------- */
+const k=new URLSearchParams(location.search).get('k');
+if(k!==null){
+  $('tabs').hidden=true;$('open').disabled=true;
+  if(!/^[a-z0-9]{4,16}$/.test(k)){lost();}
+  else fetch('m/'+k+'.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>{
+    data={to:String(j.to||'Gửi bạn'),msg:String(j.msg||'…'),sig:String(j.sig||''),
+      img:/^m\/[a-z0-9]{4,16}\.jpg$/.test(j.img||'')?j.img:null,
+      song:/^https:\/\//i.test(j.song||'')?j.song:''};
+    if(data.img){const pre=new Image();pre.src=data.img}   // tải ảnh trước khi bấm mở
+    $('open').disabled=false;
+  }).catch(lost);
+}
+function lost(){$('intro').hidden=true;$('lost').hidden=false}
+})();
+</script>
+</body>
+</html>
