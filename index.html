@@ -142,7 +142,17 @@ footer span{color:var(--accent)}
 /* huynh 26/11: "làm đơn giản, chỉ cần cái thiệp" → bỏ mọi thứ dưới thiệp (khung YouTube vẫn giữ nếu khách gửi link YouTube) */
 #react,#after,#cta,footer{display:none!important}
 header{display:none!important}   /* "trên cũng vậy": bỏ chữ PEAKER. TAP + nút nhạc nhỏ (nút to "Chạm để bật nhạc" vẫn hiện khi máy chặn tiếng) */
-body{padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+.wrap{box-sizing:border-box;padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+/* điện thoại xoay ngang / màn thấp: thu nhỏ hộp + chữ để thấy đủ hộp và dòng "Chạm vào hộp quà" không phải cuộn */
+@media (max-height:500px){
+  .wrap{padding-top:calc(env(safe-area-inset-top,0px) + 6px)}
+  .scene{min-height:0!important;gap:2px;padding:0;justify-content:center}
+  .kicker{display:none}
+  .scene h1{font-size:19px;margin:0}
+  .zone{transform:scale(.52)!important;margin:-62px auto -64px!important}
+  .hint{min-height:0;gap:4px}
+  .wrap{padding-bottom:6px}
+}
 
 /* ---------- chưa tìm thấy ---------- */
 .lost{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:20px 8px 40px}
