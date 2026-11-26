@@ -139,6 +139,8 @@ header{display:flex;justify-content:space-between;align-items:center;height:56px
 .cta:hover{color:var(--fg)}
 footer{text-align:center;font-size:10px;letter-spacing:.22em;color:var(--muted);margin-top:auto;padding-top:20px}
 footer span{color:var(--accent)}
+/* huynh 26/11: "làm đơn giản, chỉ cần cái thiệp" → bỏ mọi thứ dưới thiệp (khung YouTube vẫn giữ nếu khách gửi link YouTube) */
+#react,#after,#cta,footer{display:none!important}
 
 /* ---------- chưa tìm thấy ---------- */
 .lost{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:20px 8px 40px}
