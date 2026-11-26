@@ -334,10 +334,10 @@ const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const weak=(navigator.hardwareConcurrency||4)<=4;
 const BOXES={cam:'Cam',hong:'Hồng',xanh:'Xanh ngọc',kem:'Kem'};
 const TRACKS={'ngot-ngao':'Ngọt ngào','vui-tuoi':'Vui tươi','sau-lang':'Sâu lắng','sinh-nhat':'Sinh nhật','xin-loi':'Xin lỗi'};
-/* nhạc Pixabay (Pixabay Content License): Secret Love – pianocafe_Kumi · A Small Miracle – Romarecord1973 ·
+/* nhạc Pixabay (Pixabay Content License): Romantic – andriig (thay Secret Love 26/11: huynh nghe thấy ghê) · A Small Miracle – Romarecord1973 ·
    Romantic Piano – PaulYudin · Happy Birthday – The_Mountain · Sad Piano Emotional Rain Story – alex-morgan.
    Giây bắt đầu mặc định = chỗ nhạc dâng lên (máy dò theo độ to, chưa nghe tai). */
-const DEFYS={'ngot-ngao':40,'vui-tuoi':0,'sau-lang':0,'sinh-nhat':20,'xin-loi':50};
+const DEFYS={'ngot-ngao':0,'vui-tuoi':0,'sau-lang':0,'sinh-nhat':20,'xin-loi':50};
 const TAPS=reduce?1:3;
 
 let data={to:'Gửi cậu',msg:$('fMsg').value,sig:'— một người bí mật',img:null,song:'',yt:'',ys:20,nhac:'ngot-ngao',box:'cam'};
