@@ -142,7 +142,7 @@ footer span{color:var(--accent)}
 /* huynh 26/11: "làm đơn giản, chỉ cần cái thiệp" → bỏ mọi thứ dưới thiệp (khung YouTube vẫn giữ nếu khách gửi link YouTube) */
 #react,#after,#cta,footer{display:none!important}
 header{display:none!important}   /* "trên cũng vậy": bỏ chữ PEAKER. TAP + nút nhạc nhỏ (nút to "Chạm để bật nhạc" vẫn hiện khi máy chặn tiếng) */
-body{padding-top:env(safe-area-inset-top,0px)}
+body{padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
 
 /* ---------- chưa tìm thấy ---------- */
 .lost{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:20px 8px 40px}
