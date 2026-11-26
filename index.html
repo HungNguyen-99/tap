@@ -801,15 +801,16 @@ let WHY='';
 function lost(e){S.pending=false;M.shown=false;mStop(true);pill();$('scene').hidden=true;$('opened').hidden=true;$('lost').hidden=false;
   /* dòng soi lỗi nhỏ (không lộ khoá): bản trang · mã · có khoá không · # / %23 · lý do */
   try{const t=document.querySelector('#lost .tiny');if(t){let d=document.getElementById('why');if(!d){d=document.createElement('p');d.id='why';d.className='tiny';d.style.opacity='.55';d.style.marginTop='10px';t.after(d)}
-    d.textContent='v27b · mã '+(k||'-')+' · khoá '+(KEYH?KEYH.length+' ký tự':'KHÔNG')+' · #'+(location.hash?'có':'không')+' · %23 '+(/%23/.test(location.href)?'có':'không')+' · '+(WHY||String(e&&e.name||e||'?'))}}catch(_){}}
+    d.textContent='v27c · mã '+(k||'-')+' ('+String(K_RAW||'').length+')'+' · khoá '+(KEYH?KEYH.length+' ký tự':'KHÔNG')+' · #'+(location.hash?'có':'không')+' · %23 '+(/%23/.test(location.href)?'có':'không')+' · '+(WHY||String(e&&e.name||e||'?'))}}catch(_){}}
 
 /* link chip: ?k=MÃ#KHOÁ. Có app / máy đổi '#' thành '%23' (→ k = "MÃ#KHOÁ") hoặc bỏ mất '#' → nhận cả: ?k=MÃ#KHOÁ · ?k=MÃ%23KHOÁ · ?k=MÃ.KHOÁ */
-let k=new URLSearchParams(location.search).get('k'),KEYH=location.hash.slice(1);
-if(k!==null){const m=String(k).match(/^([a-z0-9]{4,16})[#.]([A-Za-z0-9_-]{22})$/);if(m){k=m[1];KEYH=m[2]}}
+/* lọc ký tự ẩn dính theo khi copy link (dấu cách, xuống dòng, %20, %0A…) — 27/11 chip huynh hỏng vì vậy */
+let K_RAW=new URLSearchParams(location.search).get('k'),k=K_RAW,KEYH=location.hash.slice(1).replace(/%[0-9A-Fa-f]{2}/g,'').replace(/[^A-Za-z0-9_-]/g,'').slice(0,22);
+if(k!==null){k=String(k).replace(/[^A-Za-z0-9_.#-]/g,'');const m=k.match(/^([a-z0-9]{4,16})[#.]([A-Za-z0-9_-]{22})/);if(m){k=m[1];KEYH=m[2]}else{const m3=k.match(/^[a-z0-9]{4,16}/);if(m3)k=m3[0]}}
 if(!KEYH){const m2=location.href.match(/%23([A-Za-z0-9_-]{22})/);if(m2)KEYH=m2[1]}
 if(k!==null){
   ready=false;data=norm({});reset();
-  if(!/^[a-z0-9]{4,16}$/.test(k))lost();
+  if(!/^[a-z0-9]{4,16}$/.test(k)){WHY='mã sai dạng';lost()}
   else fetch('m/'+k+'.json',{cache:'no-store'}).then(r=>{if(!r.ok){WHY='tải '+r.status;throw 0}return r.json()}).then(j=>j&&j.ct?unseal(j,k):j).then(j=>{
     if(!j||typeof j!=='object')throw 0;
     data=norm(j);ready=true;
