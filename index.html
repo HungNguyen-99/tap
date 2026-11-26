@@ -632,7 +632,7 @@ function samplePhoto(){
 const foil=$('foil'),fx2=foil.getContext('2d');const GX=14,GY=18;
 const SC={cells:new Uint8Array(GX*GY),hit:0,on:false,last:null,rect:null,done:false};
 function initFoil(){
-  SC.cells.fill(0);SC.hit=0;SC.done=false;SC.on=false;
+  SC.cells.fill(0);SC.hit=0;SC.done=false;SC.on=false;SC.anim=false;
   foil.hidden=false;foil.style.opacity='1';$('allbtn').hidden=false;$('swipe').hidden=reduce;
   paintFoil();
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(!SC.hit&&!SC.done&&!$('opened').hidden)paintFoil()});
@@ -648,8 +648,8 @@ function paintFoil(){
   x.globalAlpha=.8;for(let i=0;i<34;i++){const sx=Math.random()*foil.width,sy=Math.random()*foil.height,s=(1+Math.random()*3)*d;x.fillRect(sx-s,sy-.5*d,s*2,d);x.fillRect(sx-.5*d,sy-s,d,s*2)}
   x.globalAlpha=1;x.fillStyle=v('--fink');x.textAlign='center';x.textBaseline='middle';
   heartPath(x,foil.width/2,foil.height*.36,34*d);x.globalAlpha=.55;x.fill();x.globalAlpha=1;
-  x.font=`700 ${17*d}px "Be Vietnam Pro",system-ui,sans-serif`;x.fillText('Cào nhẹ để xem ảnh',foil.width/2,foil.height*.5);
-  x.font=`400 ${13*d}px "Be Vietnam Pro",system-ui,sans-serif`;x.globalAlpha=.75;x.fillText('dùng ngón tay miết qua lớp nhũ',foil.width/2,foil.height*.5+24*d);x.globalAlpha=1;
+  x.font=`700 ${17*d}px "Be Vietnam Pro",system-ui,sans-serif`;x.fillText('Vuốt nhẹ để mở ảnh',foil.width/2,foil.height*.5);
+  x.font=`400 ${13*d}px "Be Vietnam Pro",system-ui,sans-serif`;x.globalAlpha=.75;x.fillText('chạm hoặc vuốt một cái thôi',foil.width/2,foil.height*.5+24*d);x.globalAlpha=1;
 }
 function fpt(e){const r=SC.rect;return{x:e.clientX-r.left,y:e.clientY-r.top}}
 function scratch(a,b){
@@ -662,18 +662,45 @@ function scratch(a,b){
       if(gx<0||gy<0||gx>=GX||gy>=GY)continue;const c=gy*GX+gx;if(!SC.cells[c]){SC.cells[c]=1;SC.hit++}}}
   if(SC.hit/(GX*GY)>.55)revealPhoto();
 }
-foil.addEventListener('pointerdown',e=>{if(SC.done)return;SC.on=true;SC.rect=foil.getBoundingClientRect();try{foil.setPointerCapture(e.pointerId)}catch(_){}
-  const p=fpt(e);SC.last=p;scratch(p,p);$('swipe').hidden=true;e.preventDefault()});
-foil.addEventListener('pointermove',e=>{if(!SC.on||SC.done)return;const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
-  for(const ev of (evs.length?evs:[e])){const p=fpt(ev);scratch(SC.last,p);SC.last=p;if(SC.done)break}
-  if(Math.random()<.18&&!reduce)sparks(e.clientX,e.clientY,1,120)});
-['pointerup','pointercancel','lostpointercapture'].forEach(t=>foil.addEventListener(t,()=>{SC.on=false}));
-function revealPhoto(){
-  if(SC.done)return;SC.done=true;SC.on=false;$('allbtn').hidden=true;$('swipe').hidden=true;foil.style.opacity='0';
-  setTimeout(()=>{if(SC.done)foil.hidden=true},720);
-  const r=$('photo').getBoundingClientRect();sparks(r.left+r.width/2,r.top+r.height/2,weak?14:24,320);
-  $('live').textContent='Ảnh đã hiện';
+/* VUỐT NHẸ 1 CÁI LÀ MỞ (huynh 26/11, thay kiểu cào): vệt sáng quét theo hướng tay, lớp nhũ tan sau vệt sáng,
+   bụi vàng bắn dọc mép quét, ảnh hiện từ mờ sang nét. Chạm nhẹ (không kéo) cũng mở, quét chéo mặc định. */
+foil.addEventListener('pointerdown',e=>{if(SC.done||SC.anim)return;SC.on=true;SC.rect=foil.getBoundingClientRect();SC.start=fpt(e);
+  try{foil.setPointerCapture(e.pointerId)}catch(_){};$('swipe').hidden=true;e.preventDefault()});
+foil.addEventListener('pointermove',e=>{if(!SC.on||SC.done||SC.anim)return;const p=fpt(e),dx=p.x-SC.start.x,dy=p.y-SC.start.y;
+  if(Math.hypot(dx,dy)>14)sweep(dx,dy)});
+foil.addEventListener('pointerup',()=>{if(SC.on&&!SC.done&&!SC.anim)sweep(1,.55);SC.on=false});
+foil.addEventListener('click',()=>{if(!SC.done&&!SC.anim)sweep(1,.55)});   // dự phòng: máy cảm ứng huỷ pointerup → cú chạm vẫn mở
+['pointercancel','lostpointercapture'].forEach(t=>foil.addEventListener(t,()=>{SC.on=false}));
+function sweep(dx,dy){
+  if(SC.anim||SC.done)return;SC.anim=true;SC.on=false;$('allbtn').hidden=true;$('swipe').hidden=true;
+  const L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,vx=-uy,vy=ux,W=foil.width,H=foil.height,x=fx2;
+  const pr=[[0,0],[W,0],[0,H],[W,H]].map(([a,b])=>a*ux+b*uy),pmin=Math.min(...pr),pmax=Math.max(...pr);
+  const qr=[[0,0],[W,0],[0,H],[W,H]].map(([a,b])=>a*vx+b*vy),qmin=Math.min(...qr),qmax=Math.max(...qr);
+  const soft=Math.max(W,H)*.2,glow=Math.max(W,H)*.07,dur=reduce?1:950,t0=performance.now();
+  const r=foil.getBoundingClientRect(),kx=r.width/W,ky=r.height/H;
+  const pic=$('photo').querySelector(':scope>img,:scope>canvas.pic');
+  if(pic&&pic.animate&&!reduce)pic.animate([{filter:'blur(16px) brightness(1.3) saturate(.6)',transform:'scale(1.14)'},{filter:'none',transform:'scale(1)'}],{duration:1250,easing:'cubic-bezier(.2,.8,.2,1)'});
+  if(navigator.vibrate)try{navigator.vibrate(12)}catch(_){}
+  const step=now=>{
+    const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3),edge=pmin-soft+(pmax-pmin+2*soft)*e;
+    x.globalCompositeOperation='destination-out';     // lớp nhũ tan sau vệt sáng (mép mềm)
+    const g=x.createLinearGradient(ux*(edge-soft),uy*(edge-soft),ux*edge,uy*edge);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');
+    x.fillStyle=g;x.fillRect(0,0,W,H);
+    x.globalCompositeOperation='source-atop';         // vệt sáng lấp lánh ngay mép quét
+    const h=x.createLinearGradient(ux*(edge-glow),uy*(edge-glow),ux*(edge+glow),uy*(edge+glow));
+    h.addColorStop(0,'rgba(255,250,235,0)');h.addColorStop(.5,'rgba(255,250,235,.55)');h.addColorStop(1,'rgba(255,250,235,0)');
+    x.fillStyle=h;x.fillRect(0,0,W,H);x.globalCompositeOperation='source-over';
+    if(!reduce)for(let i=0;i<(weak?1:3);i++){          // bụi vàng bắn dọc mép quét
+      const q=qmin+Math.random()*(qmax-qmin),px=ux*(edge-soft*.35)+vx*q,py=uy*(edge-soft*.35)+vy*q;
+      if(px>=0&&py>=0&&px<=W&&py<=H)sparks(r.left+px*kx,r.top+py*ky,1,90+Math.random()*120);
+    }
+    if(k<1)requestAnimationFrame(step);
+    else{SC.anim=false;SC.done=true;foil.hidden=true;$('live').textContent='Ảnh đã hiện';
+      const pr2=$('photo').getBoundingClientRect();sparks(pr2.left+pr2.width/2,pr2.top+pr2.height/2,weak?10:18,260)}
+  };
+  requestAnimationFrame(step);
 }
+function revealPhoto(){sweep(1,.55)}
 $('allbtn').onclick=revealPhoto;
 $('photo').addEventListener('click',e=>{if(SC.done&&e.target!==$('allbtn'))floatHearts(e.clientX,e.clientY,reduce?0:4)});
 
