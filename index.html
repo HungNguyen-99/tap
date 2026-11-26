@@ -49,6 +49,8 @@ header{display:flex;justify-content:space-between;align-items:center;height:56px
 .eq i{width:3px;height:100%;background:var(--accent);border-radius:2px;transform-origin:bottom;animation:eq .9s ease-in-out infinite}
 .eq i:nth-child(2){animation-delay:-.3s}.eq i:nth-child(3){animation-delay:-.6s}
 @keyframes eq{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+.mask{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;appearance:none;border:1px solid var(--accent,#ff7a1a);background:rgba(27,21,32,.92);color:#fff;font:inherit;font-weight:700;font-size:15px;padding:12px 20px;border-radius:999px;box-shadow:0 0 24px rgba(255,122,26,.35);cursor:pointer;animation:maskp 1.6s ease-in-out infinite}
+@keyframes maskp{50%{box-shadow:0 0 34px rgba(255,122,26,.6)}}
 .mbtn.off .eq i{animation:none;transform:scaleY(.25);background:var(--muted)}
 .tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px;align-self:center;margin:0 0 8px}
 .tabs button{appearance:none;border:0;background:transparent;color:var(--soft);font-size:13px;font-weight:600;padding:7px 16px;border-radius:999px;cursor:pointer}
@@ -201,6 +203,7 @@ input:checked~b{color:var(--fg)}
   <header>
     <div class="brand">PEAKER<span>.</span> TAP</div>
     <button class="mbtn" id="mbtn" hidden aria-label="Tắt nhạc"><span class="eq"><i></i><i></i><i></i></span></button>
+    <button class="mask" id="mask" hidden>♪ Chạm để bật nhạc</button>
   </header>
   <div class="tabs" role="tablist" id="tabs" hidden>
     <button role="tab" id="tRecv" aria-selected="true">Người nhận</button>
@@ -389,6 +392,7 @@ function mPrepare(id){
     M.a.addEventListener('loadedmetadata',()=>{if(M.seek!=null){mSeek(M.seek);M.seek=null}});
     M.a.addEventListener('ended',()=>{if(!M.on)return;mSeek(data.ys||0);M.a.play().catch(()=>{})});   // lặp lại từ điệp khúc
     M.a.addEventListener('error',()=>{M.on=false;M.bad=true;pill()});
+    M.a.addEventListener('playing',()=>pill());M.a.addEventListener('pause',()=>pill());
   }
   M.bad=false;M.a.src='nhac/'+id+'.mp3';try{M.a.load()}catch(e){}
 }
@@ -398,7 +402,8 @@ function graph(){   // Web Audio chỉ để làm nhạc lớn dần (iOS không
   if(M.noGraph||!M.a)return;
   const AC=window.AudioContext||window.webkitAudioContext;
   // iPhone cũ (trước iOS 16.4): Web Audio bị nút gạt im lặng tắt tiếng → dùng <audio> thường, bỏ hiệu ứng lớn dần
-  if(!AC||(isIOS&&!navigator.audioSession)||location.protocol==='file:'){M.noGraph=true;return}
+  // iPhone/iPad: KHÔNG dùng Web Audio (bị nút gạt im lặng tắt tiếng + lỗi im lặng trên Safari) → <audio> thường, nhạc vào thẳng
+  if(!AC||isIOS||location.protocol==='file:'){M.noGraph=true;return}
   try{
     if(navigator.audioSession)navigator.audioSession.type='playback';
     M.ctx=new AC();const src=M.ctx.createMediaElementSource(M.a);M.g=M.ctx.createGain();M.g.gain.value=0;src.connect(M.g);M.g.connect(M.ctx.destination);
@@ -418,14 +423,22 @@ function mUnlock(){   // cú chạm đầu tiên: "mở khoá" tiếng trên iPh
 function mStart(fromTop,sec){   // gọi NGAY trong sự kiện chạm
   if(!M.a||!M.id||M.bad)return;graph();
   if(fromTop){if(M.a.readyState>=1)mSeek(data.ys||0);else M.seek=data.ys||0}
-  if(M.g)M.g.gain.value=0;else try{M.a.volume=0}catch(e){}
+  if(M.g)M.g.gain.value=0;else if(!isIOS)try{M.a.volume=0}catch(e){}
   M.a.muted=false;M.on=true;M.unlocked=true;
-  const p=M.a.play();if(p&&p.catch)p.catch(()=>{M.on=false;pill()});
-  fade(1,sec||2.5);pill();
+  const p=M.a.play();if(p&&p.catch)p.catch(e=>{M.err=String(e&&e.name||e);M.on=false;pill()});
+  if(!isIOS||M.g)fade(1,sec||2.5);pill();
+  clearTimeout(M.chk);M.chk=setTimeout(pill,1500);   // máy chặn tiếng → audio vẫn "paused" → hiện nút to "Chạm để bật nhạc"
 }
 function mStop(hard){if(!M.a)return;M.on=false;pill();fade(0,hard?.05:.5,()=>{if(!M.on)M.a.pause()})}
-function pill(){const b=$('mbtn');b.hidden=!M.id||M.bad||!M.shown;b.classList.toggle('off',!M.on);b.setAttribute('aria-label',M.on?'Tắt nhạc':'Bật nhạc')}
-$('mbtn').onclick=()=>{if(M.on)mStop();else mStart(false,1)};
+function pill(){const b=$('mbtn');b.hidden=!M.id||M.bad||!M.shown;b.classList.toggle('off',!M.on);b.setAttribute('aria-label',M.on?'Tắt nhạc':'Bật nhạc');
+  const ask=$('mask');if(ask)ask.hidden=b.hidden||M.userOff||(M.on&&M.a&&!M.a.paused);dbg()}
+function dbg(){if(!/[?&]dbg=1/.test(location.search))return;let d=$('dbg');
+  if(!d){d=document.createElement('pre');d.id='dbg';d.style.cssText='position:fixed;left:6px;bottom:6px;z-index:99;margin:0;font:11px/1.3 monospace;color:#9f9;background:rgba(0,0,0,.8);padding:6px;border-radius:6px;pointer-events:none;white-space:pre-wrap;max-width:90vw';document.body.appendChild(d)}
+  const a=M.a;d.textContent=['ios '+isIOS+' graph '+!!M.g+' ctx '+(M.ctx&&M.ctx.state),'id '+M.id+' on '+M.on+' bad '+!!M.bad+' err '+(M.err||'-'),
+    a?('ready '+a.readyState+' net '+a.networkState+' paused '+a.paused+' muted '+a.muted+' vol '+a.volume.toFixed(2)+' t '+a.currentTime.toFixed(1)+' err '+(a.error&&a.error.code)):'no audio'].join('\n')}
+setInterval(dbg,1000);
+$('mbtn').onclick=()=>{if(M.on){M.userOff=true;mStop()}else{M.userOff=false;mStart(false,1)}};
+$('mask').onclick=()=>{M.userOff=false;mStart(false,1)};
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&M.on)mStop(true)});
 
 /* ================= hộp quà ================= */
