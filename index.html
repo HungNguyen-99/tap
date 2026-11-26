@@ -790,7 +790,7 @@ function norm(j){
 /* lời nhắn mã hoá: khoá nằm sau dấu # của link chip (không bao giờ gửi lên máy chủ) */
 let VKEY=null,VMA='';
 async function unseal(j,k){
-  const h=location.hash.slice(1);
+  const h=KEYH;
   if(!/^[A-Za-z0-9_-]{22}$/.test(h)||!(window.crypto&&crypto.subtle))throw 0;
   const b=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
   const key=await crypto.subtle.importKey('raw',b(h),'AES-GCM',false,['decrypt']);VKEY=key;VMA=k;
@@ -799,7 +799,10 @@ async function unseal(j,k){
 }
 function lost(){S.pending=false;M.shown=false;mStop(true);pill();$('scene').hidden=true;$('opened').hidden=true;$('lost').hidden=false}
 
-const k=new URLSearchParams(location.search).get('k');
+/* link chip: ?k=MÃ#KHOÁ. Có app / máy đổi '#' thành '%23' (→ k = "MÃ#KHOÁ") hoặc bỏ mất '#' → nhận cả: ?k=MÃ#KHOÁ · ?k=MÃ%23KHOÁ · ?k=MÃ.KHOÁ */
+let k=new URLSearchParams(location.search).get('k'),KEYH=location.hash.slice(1);
+if(k!==null){const m=String(k).match(/^([a-z0-9]{4,16})[#.]([A-Za-z0-9_-]{22})$/);if(m){k=m[1];KEYH=m[2]}}
+if(!KEYH){const m2=location.href.match(/%23([A-Za-z0-9_-]{22})/);if(m2)KEYH=m2[1]}
 if(k!==null){
   ready=false;data=norm({});reset();
   if(!/^[a-z0-9]{4,16}$/.test(k))lost();
