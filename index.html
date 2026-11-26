@@ -169,8 +169,38 @@ body.loading .zone{opacity:0;pointer-events:none}
 @keyframes shine{0%{transform:translateX(-130%)}16%,100%{transform:translateX(130%)}}
 .bigheart{position:fixed;z-index:25;width:110px;height:110px;margin:-55px 0 0 -55px;pointer-events:none;filter:drop-shadow(0 6px 14px rgba(255,60,100,.45))}
 @media (prefers-reduced-motion:reduce){.gift,.floor,.tag,.halo,.motes i,.photo img.kb,.photo.live::after{animation:none!important}.motes{display:none}}
+/* ===== THIỆP = THƯ TAY CÓ DÁN ẢNH IN (huynh 27/11: ảnh / video chiếm nhiều quá, cần chỗ viết chữ) ===== */
+.card{padding:16px 16px 20px!important;
+  background-image:radial-gradient(rgba(120,84,52,.09) 1px,transparent 1.3px),radial-gradient(120% 60% at 0 0,rgba(255,255,255,.7),transparent 60%),radial-gradient(90% 50% at 100% 100%,rgba(255,200,150,.2),transparent 70%)!important;
+  background-size:15px 15px,auto,auto!important}
+.card::before{content:"";position:absolute;inset:7px;border:1px solid rgba(181,72,10,.18);border-radius:14px;pointer-events:none}
+.tape{display:block;flex:0 0 auto;width:82px;height:25px;margin:8px auto -15px;position:relative;z-index:3;transform:rotate(-4deg);border-radius:2px;
+  background:repeating-linear-gradient(135deg,rgba(255,176,138,.88) 0 7px,rgba(255,203,170,.88) 7px 14px);box-shadow:0 2px 4px rgba(60,35,20,.18)}
+.card.more .tape{transform:rotate(3.5deg);background:repeating-linear-gradient(135deg,rgba(160,208,196,.88) 0 7px,rgba(196,228,218,.88) 7px 14px)}
+.card .photo{flex:0 0 auto!important;align-self:center;margin:0 auto 20px!important;border-radius:2px!important;max-height:none!important;min-height:0!important;aspect-ratio:auto!important;
+  box-shadow:0 0 0 7px #fffdf8,0 2px 3px 7px rgba(60,35,20,.18),0 16px 30px 2px rgba(60,35,20,.3);transform:rotate(var(--tilt,-2deg))}
+.card .to{font-family:var(--hand)!important;font-size:clamp(22px,7vw,27px)!important;line-height:1.15;letter-spacing:0!important;text-transform:none!important;color:#b5480a!important;font-weight:700!important;margin:0 8px 4px!important}
+.card .msg{margin:0 8px!important;min-height:0}
+.card .sig{margin:8px 10px 0!important}
+.card.more:not(.txt) .msg{text-align:center;margin:0 10px!important}
+.card.more.txt{padding:28px 22px!important}
+.dd{position:absolute;pointer-events:none;background:center/contain no-repeat;opacity:.9;z-index:2}
+.dd1{width:30px;height:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30' fill='none' stroke='%23e0694a' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M19 25 L6 27'/%3E%3Cpath d='M21 20 L10 9'/%3E%3Cpath d='M26 18 L24 4'/%3E%3C/svg%3E")}
+.dd2{width:40px;height:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 36'%3E%3Cg transform='translate(2 10) rotate(-10 12 12)' fill='none' stroke='%23e2536a' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M12 21C4 15 2 11 2 7.5 2 4.5 4.3 2.5 7 2.5c2 0 3.7 1.1 5 3.2 1.3-2.1 3-3.2 5-3.2 2.7 0 5 2 5 5 0 3.5-2 7.5-10 13.5z'/%3E%3C/g%3E%3Cg transform='translate(25 1) scale(.5) rotate(14 12 12)' fill='%23f08aa0'%3E%3Cpath d='M12 21C4 15 2 11 2 7.5 2 4.5 4.3 2.5 7 2.5c2 0 3.7 1.1 5 3.2 1.3-2.1 3-3.2 5-3.2 2.7 0 5 2 5 5 0 3.5-2 7.5-10 13.5z'/%3E%3C/g%3E%3C/svg%3E")}
+.dd3{width:30px;height:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath fill='%23eeb05c' d='M12 2 C12.9 9 16 12.1 23 13 C16 13.9 12.9 17 12 24 C11.1 17 8 13.9 1 13 C8 12.1 11.1 9 12 2z'/%3E%3Ccircle cx='25' cy='24' r='2.2' fill='%23eeb05c'/%3E%3Ccircle cx='24' cy='5' r='1.5' fill='%23f3c98d'/%3E%3C/svg%3E")}
+#card{padding-bottom:40px!important}
+.seal{position:absolute;right:22px;bottom:10px;width:30px;height:30px;pointer-events:none;transform:rotate(-10deg);border-radius:48% 52% 50% 50%/52% 48% 52% 48%;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='translate(4.6 5) scale(.62)' fill='%23ffe9ea' opacity='.95'%3E%3Cpath d='M12 21C4 15 2 11 2 7.5 2 4.5 4.3 2.5 7 2.5c2 0 3.7 1.1 5 3.2 1.3-2.1 3-3.2 5-3.2 2.7 0 5 2 5 5 0 3.5-2 7.5-10 13.5z'/%3E%3C/g%3E%3C/svg%3E") center/100% no-repeat,radial-gradient(circle at 35% 30%,#f0788a,#cf3d56 55%,#a9263f);
+  box-shadow:0 2px 5px rgba(120,20,40,.35),inset 0 -2px 3px rgba(90,10,30,.35),inset 0 2px 2px rgba(255,255,255,.35)}
+.date{position:absolute;left:22px;bottom:15px;margin:0;font-size:10px;letter-spacing:.24em;font-weight:700;color:#a8978a;pointer-events:none}
+@media (min-height:501px){
+  body.cardmode .card .tape{margin-top:auto}
+  body.cardmode .card .sig{margin-bottom:auto!important}
+  body.cardmode .card.more:not(.txt) .msg{margin-bottom:auto!important}
+  body.cardmode .card.more>.photo:last-child{margin-bottom:auto!important}
+}
 body.cardmode,html:has(body.cardmode){overscroll-behavior:none}   /* review: vuốt không kéo nảy cả trang */
-.to{font-size:12px!important;color:#6f6158!important}   /* review: chữ 'Gửi…' rõ hơn cho người mắt kém */   /* + bỏ chữ "Vuốt sang trái" (huynh: dùng TikTok quen rồi) */
+   /* review: chữ 'Gửi…' rõ hơn cho người mắt kém */   /* + bỏ chữ "Vuốt sang trái" (huynh: dùng TikTok quen rồi) */
 /* nhiều trang thiệp: vuốt ngang như ảnh TikTok (trang 1 = thiệp chính có lớp nhũ; trang sau = data.more) */
 .deck{display:flex;gap:16px;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
   margin:0 -16px;padding:4px 16px 34px;scroll-padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
@@ -326,6 +356,7 @@ input:checked~b{color:var(--fg)}
     <section class="opened" id="opened" hidden>
       <div class="deck" id="deck">
       <article class="card" id="card">
+        <i class="tape" aria-hidden="true"></i>
         <div class="photo" id="photo">
           <canvas id="foil" aria-hidden="true"></canvas>
           <span class="swipe" id="swipe" aria-hidden="true">👆</span>
@@ -334,6 +365,8 @@ input:checked~b{color:var(--fg)}
         <p class="to" id="to"></p>
         <p class="msg" id="msg"></p>
         <p class="sig" id="sig"></p>
+        <p class="date" id="date" hidden></p>
+        <i class="seal" aria-hidden="true"></i>
       </article>
       </div>
       <div class="pager" id="pager" hidden aria-hidden="true"></div>
@@ -593,8 +626,10 @@ function openGift(inGesture){
 function showCard(){
   $('scene').hidden=true;const op=$('opened');op.hidden=false;document.body.classList.add('cardmode');window.scrollTo(0,0);M.shown=true;pill();
   const ph=$('photo');ph.classList.remove('live');[...ph.querySelectorAll('img,canvas.pic,.bg')].forEach(n=>n.remove());
-  if(data.img)addPhoto(ph,data.img,'Ảnh người tặng gửi bạn');else ph.insertBefore(samplePhoto(),ph.firstChild);
-  $('to').textContent=tagText(data.to);$('sig').textContent=data.sig;$('sig').classList.remove('show');
+  delete ph.dataset.w;delete ph.dataset.h;
+  if(data.img)addPhoto(ph,data.img,'Ảnh người tặng gửi bạn',data.iw,data.ih);else ph.insertBefore(samplePhoto(),ph.firstChild);
+  const tt=tagText(data.to);$('to').textContent=tt+(/[,.!?…:;~]$/.test(tt)?'':',');$('sig').textContent=data.sig;$('sig').classList.remove('show');
+  const dt=$('date');dt.hidden=!data.d;dt.textContent=data.d?data.d.split(/[./-]/).join(' · '):'';$('card').classList.toggle('dated',!!data.d);
   const sg=$('song');sg.hidden=!data.song;sg.href=data.song||'#';
   ['react','after','cta','ytWrap'].forEach(id=>$(id).classList.remove('show'));
   $('ytWrap').hidden=!data.yt;
@@ -622,8 +657,9 @@ function buildMore(){
   [...deck.querySelectorAll('.card.more')].forEach(n=>n.remove());
   more.forEach((p,i)=>{
     const c=document.createElement('article');c.className='card more';c.setAttribute('aria-label','Trang '+(i+2)+'/'+(more.length+1));
-    if(p.vid){const ph=document.createElement('div');ph.className='photo';c.appendChild(ph);addVideo(ph,p,i+2)}
-    else if(p.img){const ph=document.createElement('div');ph.className='photo';c.appendChild(ph);addPhoto(ph,p.img,'Ảnh '+(i+2))}
+    if(p.vid||p.img){const tp=document.createElement('i');tp.className='tape';tp.setAttribute('aria-hidden','true');c.appendChild(tp);
+      const ph=document.createElement('div');ph.className='photo';ph.style.setProperty('--tilt',(i%2?-1.8:1.7)+'deg');c.appendChild(ph);
+      if(p.vid){if(p.vw&&p.vh){ph.dataset.w=p.vw;ph.dataset.h=p.vh}addVideo(ph,p,i+2)}else addPhoto(ph,p.img,'Ảnh '+(i+2),p.iw,p.ih)}
     if(p.msg){const m=document.createElement('p');m.className='msg';m.textContent=p.msg;c.appendChild(m)}
     if(!p.img&&!p.vid)c.classList.add('txt');   // trang chỉ có chữ: chữ to, nằm giữa thiệp
     deck.appendChild(c);
@@ -635,9 +671,11 @@ function buildMore(){
 }
 /* ẢNH KHÔNG MÉO, KHÔNG MẤT NỘI DUNG (huynh 26/11): khung ảnh co giãn theo máy. Khung gần tỉ lệ ảnh (lệch < ~17 %) → phủ đầy
    (cắt nhẹ, ưu tiên phần trên-giữa); lệch nhiều → hiện ĐỦ 100 % ảnh, chỗ trống phủ chính ảnh đó làm mờ (kiểu TikTok/Instagram). */
-function addPhoto(ph,src,alt){
+function addPhoto(ph,src,alt,w,h){
+  if(w&&h){ph.dataset.w=w;ph.dataset.h=h}
   const bg=document.createElement('div');bg.className='bg';bg.style.backgroundImage='url("'+src+'")';
-  const im=new Image();im.alt=alt;im.decoding='async';im.onload=()=>fitPhoto(ph);im.src=src;
+  const im=new Image();im.alt=alt;im.decoding='async';
+  im.onload=()=>{if(!ph.dataset.w){ph.dataset.w=im.naturalWidth;ph.dataset.h=im.naturalHeight;refit()}else fitPhoto(ph)};im.src=src;
   ph.insertBefore(im,ph.firstChild);ph.insertBefore(bg,im);return im;
 }
 function fitPhoto(ph){
@@ -668,20 +706,50 @@ function playVisible(n){document.querySelectorAll('#deck video').forEach(v=>{con
     if(v.dataset.state==='ok'){const q=v.play();if(q&&q.catch)q.catch(()=>{const go=()=>{v.play().catch(()=>{});removeEventListener('touchend',go)};addEventListener('touchend',go,{once:true})})}
     else loadVid(v)}else if(!v.paused)v.pause()})}
 const fitPhotos=()=>document.querySelectorAll('#deck .photo').forEach(fitPhoto);
-/* co chữ cho vừa: khối chữ ≤ ~50 % chiều cao thiệp (trang chỉ chữ: gần hết thiệp); giữ chỗ bằng min-height */
+/* THƯ TAY: ảnh in đúng tỉ lệ gốc (không cắt), cao ≤ ~44 % thiệp; chữ to nhất còn vừa.
+   Tràn → giảm chữ tới cỡ dễ đọc (22) → thu ảnh dần (38 / 32 / 27 %) → cuối cùng mới giảm chữ tới 17. Giữ chỗ bằng min-height (gõ chữ không giật). */
 const fixedMode=()=>document.body.classList.contains('cardmode')&&innerHeight>500;
-function fitMsg(m,full,base,maxH){
-  m.style.minHeight='';m.style.fontSize='';m.textContent=full;
-  let fs=base;m.style.fontSize=fs+'px';
-  if(fixedMode())while(m.offsetHeight>maxH&&fs>18){fs-=1;m.style.fontSize=fs+'px'}
-  m.style.minHeight=m.offsetHeight+'px';
+function sizePhoto(ph,c,share){
+  const im=ph.querySelector(':scope>img,:scope>video,:scope>canvas.pic');
+  const nw=+ph.dataset.w||(im&&(im.naturalWidth||im.videoWidth||(im.tagName==='CANVAS'&&im.width)))||4,
+        nh=+ph.dataset.h||(im&&(im.naturalHeight||im.videoHeight||(im.tagName==='CANVAS'&&im.height)))||5;
+  const r=Math.max(.5,Math.min(1.9,nw/nh)),H=fixedMode()?c.clientHeight:Math.min(innerHeight*1.5,640),W=c.clientWidth-32-14-12;
+  const w=Math.min(W,H*share*r);ph.style.width=Math.round(w)+'px';ph.style.height=Math.round(w/r)+'px';
+}
+function fitCard(c,full){
+  const ph=c.querySelector(':scope>.photo'),m=c.querySelector(':scope>.msg'),fixed=fixedMode(),txt=c.classList.contains('txt'),main=c.id==='card';
+  const n=Array.from(full||'').length,maxFs=txt?34:main?(n<=24?40:n<=40?35:n<=90?31:n<=150?28:26):(n<=40?30:n<=90?28:26),comfy=Math.min(maxFs,22),minFs=17;
+  if(m){m.style.minHeight='';m.textContent=full}
+  const last=c.querySelector(':scope>.sig')||m||ph,pb=parseFloat(getComputedStyle(c).paddingBottom)||0;
+  const fits=()=>!last||last.offsetTop+last.offsetHeight<=c.clientHeight-pb+1;
+  const setFs=f=>{if(m)m.style.fontSize=f+'px'};
+  const shares=m&&n?(main?[.44,.38,.32,.27]:[.5,.44,.38,.3]):[.72];
+  let ok=false;
+  for(const sh of shares){
+    if(ph)sizePhoto(ph,c,sh);
+    setFs(fixed?maxFs:Math.min(maxFs,28));
+    if(!fixed||!m){ok=true;break}
+    for(let f=maxFs;f>=comfy;f--){setFs(f);if(fits()){ok=true;break}}
+    if(ok)break;
+  }
+  if(!ok)for(let f=comfy-1;f>=minFs;f--){setFs(f);if(fits())break}
+  if(m)m.style.minHeight=m.offsetHeight+'px';
+  if(ph)doodles(c,ph);
+}
+/* nét vẽ tay quanh ảnh in (chỉ khi hai bên ảnh còn chỗ: ảnh dọc) */
+function doodles(c,ph){
+  let dd=c.querySelectorAll(':scope>.dd');
+  if(!dd.length){for(let i=1;i<=3;i++){const e=document.createElement('i');e.className='dd dd'+i;e.setAttribute('aria-hidden','true');c.appendChild(e)}dd=c.querySelectorAll(':scope>.dd')}
+  const L=ph.offsetLeft,T=ph.offsetTop,W=ph.offsetWidth,H=ph.offsetHeight,room=Math.min(L,c.clientWidth-L-W)>=50,flip=c.classList.contains('more');
+  dd.forEach(e=>e.style.display=room?'':'none');if(!room)return;
+  const lx=L-40,rx=L+W+12;
+  dd[0].style.left=(flip?rx:lx)+'px';dd[0].style.top=(T+4)+'px';dd[0].style.transform=flip?'scaleX(-1)':'';
+  dd[1].style.left=(flip?lx-6:rx)+'px';dd[1].style.top=(T+H-46)+'px';
+  dd[2].style.left=(flip?lx:rx+2)+'px';dd[2].style.top=(T+Math.round(H*.3))+'px';
 }
 function fitAll(){
-  const card=$('card'),H=card.clientHeight,fixed=fixedMode();
-  const extra=($('to').offsetHeight+28)+($('sig').offsetHeight+10)+24;
-  fitMsg($('msg'),String(data.msg).normalize('NFC'),27,fixed?Math.max(60,H*.5-extra):1e9);
-  document.querySelectorAll('#deck .card.more').forEach(c=>{const m=c.querySelector('.msg');if(!m)return;
-    const txt=c.classList.contains('txt');fitMsg(m,m.textContent,txt?32:27,fixed?(txt?c.clientHeight-130:Math.max(60,c.clientHeight*.38)):1e9)});
+  fitCard($('card'),String(data.msg).normalize('NFC'));
+  document.querySelectorAll('#deck .card.more').forEach(c=>{const m=c.querySelector(':scope>.msg');fitCard(c,m?(m.dataset.full||(m.dataset.full=m.textContent)):'')});
   fitPhotos();
 }
 function refit(){if(!S.opened||!document.body.classList.contains('cardmode'))return;
@@ -873,11 +941,12 @@ function norm(j){
     song:/^https:\/\//i.test(j.song||'')?String(j.song):'',
     yt:/^[A-Za-z0-9_-]{11}$/.test(j.yt||'')?j.yt:'',
     ys:j.ys==null||j.ys===''?(j.yt?0:DEFYS[nh]||0):Math.max(0,Math.min(36000,parseInt(j.ys,10)||0)),
-    nhac:/^[a-z0-9-]{1,40}$/.test(nh)?nh:'',box:BOXES[bx]?bx:'cam',
+    nhac:/^[a-z0-9-]{1,40}$/.test(nh)?nh:'',box:BOXES[bx]?bx:'cam',iw:+j.iw||0,ih:+j.ih||0,
+    d:/^\d{1,2}[./-]\d{1,2}[./-]\d{2,4}$/.test(j.d||'')?String(j.d):'',
     more:(Array.isArray(j.more)?j.more:[]).slice(0,9).map(p=>{const pi=String(p&&p.img||'');
       const pv=String(p&&p.vid||''),po=String(p&&p.poster||'');
       return{img:/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(pi)||/^m\/[a-z0-9-]{4,24}\.jpg$/.test(pi)?pi:null,msg:Array.from(String(p&&p.msg||'')).slice(0,220).join(''),
-        vid:/^m\/[a-z0-9]{4,16}-\d{1,2}\.bin$/.test(pv)?pv:null,poster:/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(po)?po:null,vw:+p.vw||0,vh:+p.vh||0}}).filter(p=>p.img||p.msg||p.vid)};
+        iw:+(p&&p.iw)||0,ih:+(p&&p.ih)||0,vid:/^m\/[a-z0-9]{4,16}-\d{1,2}\.bin$/.test(pv)?pv:null,poster:/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(po)?po:null,vw:+p.vw||0,vh:+p.vh||0}}).filter(p=>p.img||p.msg||p.vid)};
 }
 /* lời nhắn mã hoá: khoá nằm sau dấu # của link chip (không bao giờ gửi lên máy chủ) */
 let VKEY=null,VMA='';
