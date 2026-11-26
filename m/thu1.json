@@ -4,5 +4,13 @@
  "sig": "— PEAKER",
  "song": "",
  "nhac": "ngot-ngao",
- "box": "cam"
+ "box": "cam",
+ "more": [
+  {
+   "msg": "Đây là trang 2. Vuốt sang trái thêm lần nữa nhé →"
+  },
+  {
+   "msg": "Trang 3: mỗi trang có thể là một ảnh và một lời chúc. Tối đa 10 trang."
+  }
+ ]
 }
