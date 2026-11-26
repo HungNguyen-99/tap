@@ -140,7 +140,23 @@ header{display:flex;justify-content:space-between;align-items:center;height:56px
 footer{text-align:center;font-size:10px;letter-spacing:.22em;color:var(--muted);margin-top:auto;padding-top:20px}
 footer span{color:var(--accent)}
 /* huynh 26/11: "làm đơn giản, chỉ cần cái thiệp" → bỏ mọi thứ dưới thiệp (khung YouTube vẫn giữ nếu khách gửi link YouTube) */
-#react,#after,#cta,footer,#allbtn{display:none!important}   /* + bỏ nút "Mở hết ảnh" (huynh): cào ~55 % thì ảnh tự hiện hết */
+#react,#after,#cta,footer,#allbtn{display:none!important}
+/* nhiều trang thiệp: vuốt ngang như ảnh TikTok (trang 1 = thiệp chính có lớp nhũ; trang sau = data.more) */
+.deck{display:flex;gap:16px;overflow-x:auto;overflow-y:visible;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  margin:0 -16px;padding:4px 16px 34px;scroll-padding:0 16px;scrollbar-width:none;overscroll-behavior-x:contain}
+.deck::-webkit-scrollbar{display:none}
+.deck>.card{flex:0 0 100%;box-sizing:border-box;scroll-snap-align:center;scroll-snap-stop:always}
+.card.more .msg{min-height:0;margin-top:16px}
+.card.more .photo{background:#241a26}
+.card.more.txt{display:flex;flex-direction:column;justify-content:center;text-align:center;padding:28px 22px}
+.card.more.txt .msg{font-size:32px;line-height:1.3;margin:0}
+.card.more.txt::before,.card.more.txt::after{content:"♥";display:block;color:var(--accent,#ff7a1a);opacity:.55;font-size:22px;margin:14px 0}
+.pager{display:flex;justify-content:center;gap:7px;margin-top:-22px}
+.pager i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.25);transition:background .3s,width .3s}
+.pager i.on{width:20px;border-radius:4px;background:var(--accent,#ff7a1a)}
+.swh{margin:-6px 0 0;text-align:center;font-size:14px;font-weight:600;color:var(--fg,#f2ece4);opacity:.85;animation:swh 1.6s ease-in-out infinite}
+.swh b{display:inline-block;font-size:18px}
+@keyframes swh{50%{transform:translateX(-6px)}}   /* + bỏ nút "Mở hết ảnh" (huynh): cào ~55 % thì ảnh tự hiện hết */
 header{display:none!important}   /* "trên cũng vậy": bỏ chữ PEAKER. TAP + nút nhạc nhỏ (nút to "Chạm để bật nhạc" vẫn hiện khi máy chặn tiếng) */
 .wrap{box-sizing:border-box;padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
 /* điện thoại xoay ngang / màn thấp: thu nhỏ hộp + chữ để thấy đủ hộp và dòng "Chạm vào hộp quà" không phải cuộn */
@@ -263,6 +279,7 @@ input:checked~b{color:var(--fg)}
     </section>
 
     <section class="opened" id="opened" hidden>
+      <div class="deck" id="deck">
       <article class="card" id="card">
         <div class="photo" id="photo">
           <canvas id="foil" aria-hidden="true"></canvas>
@@ -273,6 +290,9 @@ input:checked~b{color:var(--fg)}
         <p class="msg" id="msg"></p>
         <p class="sig" id="sig"></p>
       </article>
+      </div>
+      <div class="pager" id="pager" hidden aria-hidden="true"></div>
+      <p class="swh" id="swh" hidden>Vuốt sang trái để xem tiếp <b>›</b></p>
       <div class="react fade" id="react">
         <button class="heartbtn" id="heart"><b>♥</b> Thả tim</button>
         <span class="hcount" id="hcount" aria-live="polite"></span>
@@ -506,6 +526,7 @@ function showCard(){
   ['react','after','cta','ytWrap'].forEach(id=>$(id).classList.remove('show'));
   $('ytWrap').hidden=!data.yt;
   initFoil();
+  buildMore();
   const card=$('card');
   if(!reduce&&card.animate)card.animate([{opacity:0,transform:'translateY(38vh) scale(.42) rotate(-5deg)'},{opacity:1,offset:.3},{opacity:1,transform:'none'}],{duration:950,easing:'cubic-bezier(.16,1.12,.3,1)'});
   typeMsg(reduce?0:1000);
@@ -519,8 +540,28 @@ function typeMsg(delay){
   m.onclick=finish;   // chạm vào lời nhắn = hiện hết ngay
   later(()=>{if(fin)return;let i=0;S.typing=setInterval(()=>{i++;m.textContent=chars.slice(0,i).join('');m.appendChild(cur);if(i>=chars.length)finish()},chars.length>140?34:46)},delay);
 }
+/* các trang thiệp thêm (vuốt ngang) */
+function buildMore(){
+  const deck=$('deck'),more=(data.more||[]);
+  [...deck.querySelectorAll('.card.more')].forEach(n=>n.remove());
+  more.forEach((p,i)=>{
+    const c=document.createElement('article');c.className='card more';c.setAttribute('aria-label','Trang '+(i+2)+'/'+(more.length+1));
+    if(p.img){const ph=document.createElement('div');ph.className='photo';const im=new Image();im.alt='Ảnh '+(i+2);im.decoding='async';im.src=p.img;ph.appendChild(im);c.appendChild(ph)}
+    if(p.msg){const m=document.createElement('p');m.className='msg';m.textContent=p.msg;c.appendChild(m)}
+    if(!p.img)c.classList.add('txt');   // trang chỉ có chữ: chữ to, nằm giữa thiệp
+    deck.appendChild(c);
+  });
+  deck.scrollLeft=0;
+  const pg=$('pager');pg.textContent='';pg.hidden=!more.length;$('swh').hidden=true;
+  for(let i=0;i<=more.length&&more.length;i++)pg.appendChild(document.createElement('i'));
+  pageDots();
+}
+function pageDots(){const deck=$('deck'),n=Math.round(deck.scrollLeft/Math.max(1,deck.clientWidth-16));
+  [...$('pager').children].forEach((d,i)=>d.classList.toggle('on',i===n));if(n>0)$('swh').hidden=true}
+$('deck').addEventListener('scroll',pageDots,{passive:true});
 function done(){
   $('sig').classList.add('show');
+  if((data.more||[]).length&&Math.round($('deck').scrollLeft)<10)later(()=>{$('swh').hidden=false},reduce?0:600);
   if(data.yt)loadYT();
   ['react','ytWrap','after','cta'].forEach((id,i)=>later(()=>$(id).classList.add('show'),reduce?0:300+i*180));
 }
@@ -646,7 +687,9 @@ function norm(j){
     song:/^https:\/\//i.test(j.song||'')?String(j.song):'',
     yt:/^[A-Za-z0-9_-]{11}$/.test(j.yt||'')?j.yt:'',
     ys:j.ys==null||j.ys===''?(j.yt?0:DEFYS[nh]||0):Math.max(0,Math.min(36000,parseInt(j.ys,10)||0)),
-    nhac:/^[a-z0-9-]{1,40}$/.test(nh)?nh:'',box:BOXES[bx]?bx:'cam'};
+    nhac:/^[a-z0-9-]{1,40}$/.test(nh)?nh:'',box:BOXES[bx]?bx:'cam',
+    more:(Array.isArray(j.more)?j.more:[]).slice(0,9).map(p=>{const pi=String(p&&p.img||'');
+      return{img:/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(pi)||/^m\/[a-z0-9-]{4,24}\.jpg$/.test(pi)?pi:null,msg:Array.from(String(p&&p.msg||'')).slice(0,220).join('')}}).filter(p=>p.img||p.msg)};
 }
 /* lời nhắn mã hoá: khoá nằm sau dấu # của link chip (không bao giờ gửi lên máy chủ) */
 async function unseal(j,k){
