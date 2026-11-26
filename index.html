@@ -791,13 +791,17 @@ function norm(j){
 let VKEY=null,VMA='';
 async function unseal(j,k){
   const h=KEYH;
-  if(!/^[A-Za-z0-9_-]{22}$/.test(h)||!(window.crypto&&crypto.subtle))throw 0;
+  if(!/^[A-Za-z0-9_-]{22}$/.test(h)){WHY='thiếu khoá';throw 0}if(!(window.crypto&&crypto.subtle)){WHY='máy không giải mã được';throw 0}
   const b=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
   const key=await crypto.subtle.importKey('raw',b(h),'AES-GCM',false,['decrypt']);VKEY=key;VMA=k;
   const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b(j.iv),additionalData:new TextEncoder().encode(k)},key,b(j.ct));
   return JSON.parse(new TextDecoder().decode(pt));
 }
-function lost(){S.pending=false;M.shown=false;mStop(true);pill();$('scene').hidden=true;$('opened').hidden=true;$('lost').hidden=false}
+let WHY='';
+function lost(e){S.pending=false;M.shown=false;mStop(true);pill();$('scene').hidden=true;$('opened').hidden=true;$('lost').hidden=false;
+  /* dòng soi lỗi nhỏ (không lộ khoá): bản trang · mã · có khoá không · # / %23 · lý do */
+  try{const t=document.querySelector('#lost .tiny');if(t){let d=document.getElementById('why');if(!d){d=document.createElement('p');d.id='why';d.className='tiny';d.style.opacity='.55';d.style.marginTop='10px';t.after(d)}
+    d.textContent='v27b · mã '+(k||'-')+' · khoá '+(KEYH?KEYH.length+' ký tự':'KHÔNG')+' · #'+(location.hash?'có':'không')+' · %23 '+(/%23/.test(location.href)?'có':'không')+' · '+(WHY||String(e&&e.name||e||'?'))}}catch(_){}}
 
 /* link chip: ?k=MÃ#KHOÁ. Có app / máy đổi '#' thành '%23' (→ k = "MÃ#KHOÁ") hoặc bỏ mất '#' → nhận cả: ?k=MÃ#KHOÁ · ?k=MÃ%23KHOÁ · ?k=MÃ.KHOÁ */
 let k=new URLSearchParams(location.search).get('k'),KEYH=location.hash.slice(1);
@@ -806,7 +810,7 @@ if(!KEYH){const m2=location.href.match(/%23([A-Za-z0-9_-]{22})/);if(m2)KEYH=m2[1
 if(k!==null){
   ready=false;data=norm({});reset();
   if(!/^[a-z0-9]{4,16}$/.test(k))lost();
-  else fetch('m/'+k+'.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>j&&j.ct?unseal(j,k):j).then(j=>{
+  else fetch('m/'+k+'.json',{cache:'no-store'}).then(r=>{if(!r.ok){WHY='tải '+r.status;throw 0}return r.json()}).then(j=>j&&j.ct?unseal(j,k):j).then(j=>{
     if(!j||typeof j!=='object')throw 0;
     data=norm(j);ready=true;
     const pend=S.pending,t=S.taps;reset();
