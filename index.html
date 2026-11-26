@@ -169,6 +169,31 @@ body.loading .zone{opacity:0;pointer-events:none}
 @keyframes shine{0%{transform:translateX(-130%)}16%,100%{transform:translateX(130%)}}
 .bigheart{position:fixed;z-index:25;width:110px;height:110px;margin:-55px 0 0 -55px;pointer-events:none;filter:drop-shadow(0 6px 14px rgba(255,60,100,.45))}
 @media (prefers-reduced-motion:reduce){.gift,.floor,.tag,.halo,.motes i,.photo img.kb,.photo.live::after{animation:none!important}.motes{display:none}}
+/* ===== MƯỢT TRÊN iPHONE (huynh 27/11: "hơi giật lag") =====
+   - bóng đổ thiệp nhẹ lại (bóng mờ 70 px vẽ lại rất tốn); chữ nằm lớp riêng → gõ chữ không vẽ lại cả thiệp
+   - tia sáng: ảnh vẽ sẵn (không dùng mask); bàn tay: bỏ filter; hạt sáng: keyframes không dùng biến */
+.card{box-shadow:0 10px 28px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06),0 0 22px var(--halo)!important}
+.card .to,.card .msg,.card .sig{will-change:transform}
+.rays{-webkit-mask:none!important;mask:none!important;background:center/100% 100% no-repeat!important}
+@keyframes moteA{0%{transform:translate(0,0);opacity:0}12%{opacity:.7}80%{opacity:.45}100%{transform:translate(26px,-105vh);opacity:0}}
+@keyframes moteB{0%{transform:translate(0,0);opacity:0}12%{opacity:.7}80%{opacity:.45}100%{transform:translate(-22px,-105vh);opacity:0}}
+/* ===== MÀN HỘP QUÀ có ánh sáng sân khấu (huynh 27/11: chấm điểm + nâng) ===== */
+.scene::before{content:"";position:fixed;top:0;bottom:0;left:50%;width:min(100%,560px);transform:translateX(-50%);pointer-events:none;z-index:0;
+  background:radial-gradient(60% 56% at 50% 0%,rgba(255,238,210,.13),transparent 72%),radial-gradient(74% 30% at 50% 58%,var(--halo),transparent 72%)}
+.zone::after{content:"";position:absolute;left:50%;bottom:-20px;width:320px;height:64px;margin-left:-160px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,var(--halo),transparent);opacity:.9}
+.floor{z-index:1}
+.gift{z-index:2}
+.base::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(112deg,transparent 22%,rgba(255,255,255,.2) 34%,transparent 47%)}
+.base::after{content:"";position:absolute;left:0;right:0;top:46%;height:30px;pointer-events:none;
+  background:linear-gradient(180deg,var(--r2),var(--r1) 34%,var(--r1) 66%,var(--r2));box-shadow:0 2px 4px rgba(0,0,0,.18)}
+.lid::after{content:"";position:absolute;inset:0;border-radius:9px;pointer-events:none;background:linear-gradient(112deg,transparent 18%,rgba(255,255,255,.26) 30%,transparent 44%)}
+.hand{left:40px!important;right:auto!important;bottom:40px!important;width:52px;height:52px;font-size:0!important;line-height:0;filter:none!important;animation:none!important;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.95) 0 5px,rgba(255,255,255,.28) 6px 9px,transparent 10px)}
+.hand::before,.hand::after{content:"";position:absolute;left:0!important;top:0!important;width:100%!important;height:100%!important;box-sizing:border-box;border:2px solid rgba(255,255,255,.85);border-radius:50%;opacity:0;animation:tapring 1.9s ease-out infinite}
+.hand::after{animation-delay:.65s}
+@keyframes tapring{0%{transform:scale(.22);opacity:.95}70%{opacity:.25}100%{transform:scale(1.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){.hand::before,.hand::after{animation:none;opacity:.6;transform:scale(.8)}}
 /* ===== THIỆP = THƯ TAY CÓ DÁN ẢNH IN (huynh 27/11: ảnh / video chiếm nhiều quá, cần chỗ viết chữ) ===== */
 .card{padding:16px 16px 20px!important;
   background-image:radial-gradient(rgba(120,84,52,.09) 1px,transparent 1.3px),radial-gradient(120% 60% at 0 0,rgba(255,255,255,.7),transparent 60%),radial-gradient(90% 50% at 100% 100%,rgba(255,200,150,.2),transparent 70%)!important;
@@ -459,7 +484,7 @@ function later(fn,ms){S.timers.push(setTimeout(fn,ms))}
 
 /* ================= hiệu ứng canvas (chỉ chạy khi có hạt) ================= */
 const cv=$('fx'),cx=cv.getContext('2d');let W=0,H=0,dpr=1,parts=[],running=false,lastT=0;
-function size(){dpr=Math.min(weak?1.5:2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
+function size(){dpr=Math.min(weak?1.25:1.5,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr)}
 addEventListener('resize',size);size();
 function sprite(r,draw){const c=document.createElement('canvas');c.width=c.height=r*2;draw(c.getContext('2d'),r);return c}
 const SPARK=sprite(16,(x,r)=>{const g=x.createRadialGradient(r,r,0,r,r,r);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.25,'rgba(255,222,150,.9)');g.addColorStop(1,'rgba(255,170,60,0)');x.fillStyle=g;x.fillRect(0,0,r*2,r*2)});
@@ -485,11 +510,11 @@ function sparks(x,y,n,spd){if(reduce)return;for(let i=0;i<n;i++){const a=R(0,Mat
 function confetti(x,y){
   if(reduce)return;const cs=getComputedStyle(document.body);
   const cols=[cs.getPropertyValue('--b1'),cs.getPropertyValue('--r1'),'#ffd28a','#ff7a1a','#fff3e2','#ff5a6e'].map(s=>s.trim()).filter(Boolean);
-  const n=weak?55:90;
+  const n=weak?45:70;
   for(let i=0;i<n;i++){const a=R(-Math.PI*.85,-Math.PI*.15),v=R(420,1050);
     add({k:'c',x:x+R(-30,30),y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:1300,drag:.975,t:0,life:R(1.3,2.1),w:R(6,10),h:R(10,16),col:cols[i%cols.length],rot:R(0,6),vr:R(-8,8),flip:R(4,12)})}
-  for(let i=0;i<(weak?10:18);i++){const a=R(-Math.PI*.8,-Math.PI*.2),v=R(300,700);add({k:'h',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:500,drag:.97,t:0,life:R(1.6,2.4),s:R(10,18),img:HEARTS[i%3],w:R(3,6),ph:R(0,6),amp:R(4,12)})}
-  sparks(x,y,weak?14:26,420);
+  for(let i=0;i<(weak?8:12);i++){const a=R(-Math.PI*.8,-Math.PI*.2),v=R(300,700);add({k:'h',x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,g:500,drag:.97,t:0,life:R(1.6,2.4),s:R(10,18),img:HEARTS[i%3],w:R(3,6),ph:R(0,6),amp:R(4,12)})}
+  sparks(x,y,weak?10:18,420);
 }
 function floatHearts(x,y,n){for(let i=0;i<n;i++)add({k:'h',x:x+R(-14,14),y,vx:R(-30,30),vy:R(-260,-140),g:-20,drag:.99,t:0,life:R(1.6,2.6),s:R(11,22),img:HEARTS[(Math.random()*3)|0],w:R(2,5),ph:R(0,6),amp:R(6,18)})}
 
@@ -564,7 +589,7 @@ document.addEventListener('click',()=>{if(!$('mask').hidden&&S.opened&&!M.userOf
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){M.wasOn=M.on;if(M.on){M.on=false;clearInterval(M.fadeT);try{M.a.pause()}catch(e){}}return}
   if(S.opened&&M.id&&M.wasOn&&!M.userOff)mStart(false,1);
-  if(S.opened)pageDots();pill();
+  if(S.opened)pageDots(true);pill();
 });
 
 /* ================= hộp quà ================= */
@@ -583,10 +608,15 @@ function enter(){
   gift.animate([{transform:'translateY(-70px) scale(.72)'},{transform:'translateY(8px) scale(1.04,.96)',offset:.62},{transform:'translateY(-3px) scale(.99,1.01)',offset:.8},{transform:'none'}],{duration:760,easing:'cubic-bezier(.3,.7,.3,1)'});
   later(()=>{const p=seamPoint();sparks(p.x,p.y+70,12,240)},430);
 }
+/* tia sáng lúc mở hộp: vẽ sẵn 1 lần thành ảnh (mask CSS trên lớp đang chuyển động rất tốn trên iPhone) */
+(function(){try{const c=document.createElement('canvas');c.width=c.height=420;const x=c.getContext('2d'),r=210;
+  x.fillStyle='rgba(255,226,170,.24)';for(let a=0;a<360;a+=22){x.beginPath();x.moveTo(r,r);x.arc(r,r,r,a*Math.PI/180,(a+7)*Math.PI/180);x.closePath();x.fill()}
+  x.globalCompositeOperation='destination-in';const g=x.createRadialGradient(r,r,r*.18,r,r,r*.68);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=g;x.fillRect(0,0,420,420);$('rays').style.backgroundImage='url('+c.toDataURL()+')'}catch(e){}})();
 /* hạt sáng bay lên sau hộp (nền sống động, rẻ: CSS) */
 (function(){if(reduce)return;const m=document.createElement('div');m.className='motes';m.setAttribute('aria-hidden','true');
-  for(let i=0;i<(weak?7:12);i++){const e=document.createElement('i'),z=4+Math.random()*9;
-    e.style.cssText='left:'+(Math.random()*100).toFixed(1)+'%;width:'+z.toFixed(1)+'px;height:'+z.toFixed(1)+'px;--dx:'+(Math.random()*80-40).toFixed(0)+'px;animation-duration:'+(9+Math.random()*9).toFixed(1)+'s;animation-delay:'+(-Math.random()*16).toFixed(1)+'s';m.appendChild(e)}
+  for(let i=0;i<(weak?6:9);i++){const e=document.createElement('i'),z=4+Math.random()*9;
+    e.style.cssText='left:'+(Math.random()*100).toFixed(1)+'%;width:'+z.toFixed(1)+'px;height:'+z.toFixed(1)+'px;animation-name:'+(i%2?'moteA':'moteB')+';animation-duration:'+(9+Math.random()*9).toFixed(1)+'s;animation-delay:'+(-Math.random()*16).toFixed(1)+'s';m.appendChild(e)}
   $('scene').prepend(m)})();
 function seamPoint(){const r=lid.getBoundingClientRect();return{x:r.left+r.width/2,y:r.bottom}}
 gift.addEventListener('click',()=>{
@@ -667,15 +697,17 @@ function buildMore(){
   deck.scrollLeft=0;
   const pg=$('pager');pg.textContent='';pg.hidden=!more.length;$('swh').hidden=true;
   for(let i=0;i<=more.length&&more.length;i++)pg.appendChild(document.createElement('i'));
-  pageDots();
+  pageDots(true);
 }
 /* ẢNH KHÔNG MÉO, KHÔNG MẤT NỘI DUNG (huynh 26/11): khung ảnh co giãn theo máy. Khung gần tỉ lệ ảnh (lệch < ~17 %) → phủ đầy
    (cắt nhẹ, ưu tiên phần trên-giữa); lệch nhiều → hiện ĐỦ 100 % ảnh, chỗ trống phủ chính ảnh đó làm mờ (kiểu TikTok/Instagram). */
+let PRE=null;
 function addPhoto(ph,src,alt,w,h){
   if(w&&h){ph.dataset.w=w;ph.dataset.h=h}
   const bg=document.createElement('div');bg.className='bg';bg.style.backgroundImage='url("'+src+'")';
-  const im=new Image();im.alt=alt;im.decoding='async';
-  im.onload=()=>{if(!ph.dataset.w){ph.dataset.w=im.naturalWidth;ph.dataset.h=im.naturalHeight;refit()}else fitPhoto(ph)};im.src=src;
+  const pre=PRE&&PRE.src===src&&!PRE.used?(PRE.used=true,PRE.im):null,im=pre||new Image();im.alt=alt;im.decoding='async';
+  const ok=()=>{if(!ph.dataset.w){ph.dataset.w=im.naturalWidth;ph.dataset.h=im.naturalHeight;refit()}else fitPhoto(ph)};
+  if(pre&&im.complete&&im.naturalWidth)setTimeout(ok,0);else{im.onload=ok;if(!pre)im.src=src}
   ph.insertBefore(im,ph.firstChild);ph.insertBefore(bg,im);return im;
 }
 function fitPhoto(ph){
@@ -698,7 +730,7 @@ async function loadVid(v){
   if(v.dataset.state)return;v.dataset.state='loading';
   try{if(!VKEY)throw 0;const buf=await (await fetch(v.dataset.src,{cache:'force-cache'})).arrayBuffer();
     const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(buf,0,12),additionalData:new TextEncoder().encode(VMA+':'+v.dataset.n)},VKEY,new Uint8Array(buf,12));
-    v.src=URL.createObjectURL(new Blob([pt],{type:'video/mp4'}));v.dataset.state='ok';pageDots();
+    v.src=URL.createObjectURL(new Blob([pt],{type:'video/mp4'}));v.dataset.state='ok';pageDots(true);
   }catch(e){v.dataset.state='bad'}
 }
 function playVisible(n){document.querySelectorAll('#deck video').forEach(v=>{const on=v.closest('.card')===$('deck').children[n];
@@ -757,19 +789,21 @@ function refit(){if(!S.opened||!document.body.classList.contains('cardmode'))ret
 let RW=innerWidth,RH=innerHeight,RT=0;
 addEventListener('resize',()=>{if(innerWidth===RW&&Math.abs(innerHeight-RH)<150)return;RW=innerWidth;RH=innerHeight;clearTimeout(RT);RT=setTimeout(refit,200)});
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>refit());
-function pageDots(){const deck=$('deck'),n=Math.round(deck.scrollLeft/Math.max(1,deck.clientWidth-16));
+let curPage=-1;
+function pageDots(force){const deck=$('deck'),n=Math.round(deck.scrollLeft/Math.max(1,deck.clientWidth-16));
+  if(n===curPage&&force!==true)return;curPage=n;
   [...$('pager').children].forEach((d,i)=>d.classList.toggle('on',i===n));if(n>0)$('swh').hidden=true;
   playVisible(n);
   const c=deck.children[n];   // trang vuốt tới lần đầu: ảnh hiện từ mờ sang nét + chút bụi vàng
   if(n>0&&c&&!c.dataset.seen){c.dataset.seen='1';const im=c.querySelector('.photo>img,.photo>video');
-    if(im&&im.animate&&!reduce){im.animate([{filter:'blur(14px) brightness(1.25) saturate(.7)',transform:'scale(1.1)'},{filter:'none',transform:'scale(1)'}],{duration:1000,easing:'cubic-bezier(.2,.8,.2,1)'});
+    if(im&&im.animate&&!reduce){im.animate([{opacity:0,transform:'scale(1.09)'},{opacity:1,transform:'scale(1)'}],{duration:850,easing:'cubic-bezier(.2,.8,.2,1)'});
       const r=im.getBoundingClientRect();if(r.width)sparks(r.left+r.width/2,r.top+r.height/2,weak?6:12,200)}
     const ph=c.querySelector('.photo');if(ph&&!ph.querySelector('video')){ph.classList.add('live');fitPhoto(ph)}}}
 /* vuốt trang có chiều sâu: thiệp bên cạnh nhỏ + mờ đi */
 let depthRAF=0;
-function depth(){depthRAF=0;const d=$('deck'),off=reduce||weak,x=d.scrollLeft/Math.max(1,d.clientWidth-16);
+function depth(){depthRAF=0;const d=$('deck'),off=true,x=d.scrollLeft/Math.max(1,d.clientWidth-16);
   [...d.children].forEach((c,i)=>{const a=off?0:Math.min(1,Math.abs(i-x));c.style.transform=a<.004?'':'scale('+(1-a*.07).toFixed(4)+')';c.style.opacity=a<.004?'':(1-a*.45).toFixed(3)})}
-$('deck').addEventListener('scroll',()=>{pageDots();if(!depthRAF)depthRAF=requestAnimationFrame(depth)},{passive:true});
+$('deck').addEventListener('scroll',()=>pageDots(),{passive:true});
 /* chạm 2 lần vào ảnh / video: tim to bật lên (như Instagram, TikTok) */
 function bigHeart(x,y){
   if(reduce)return;const d=document.createElement('div');d.className='bigheart';d.style.left=x+'px';d.style.top=y+'px';
@@ -862,7 +896,7 @@ function sweep(dx,dy){
   const soft=Math.max(W,H)*.2,glow=Math.max(W,H)*.07,dur=reduce?1:950,t0=performance.now();
   const r=foil.getBoundingClientRect(),kx=r.width/W,ky=r.height/H;
   const pic=$('photo').querySelector(':scope>img,:scope>canvas.pic');
-  if(pic&&pic.animate&&!reduce)pic.animate([{filter:'blur(16px) brightness(1.3) saturate(.6)',transform:'scale(1.14)'},{filter:'none',transform:'scale(1)'}],{duration:1250,easing:'cubic-bezier(.2,.8,.2,1)'});
+  if(pic&&pic.animate&&!reduce)pic.animate([{transform:'scale(1.13)'},{transform:'scale(1)'}],{duration:1300,easing:'cubic-bezier(.2,.8,.2,1)'});
   const step=now=>{
     const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3),edge=pmin-soft+(pmax-pmin+2*soft)*e;
     x.globalCompositeOperation='destination-out';     // lớp nhũ tan sau vệt sáng (mép mềm)
@@ -923,7 +957,7 @@ function reset(){
   $('hintTxt').textContent=ready?(reduce?'Chạm vào hộp quà để mở':HINTS[0]):'Đang lấy quà ra…';
   $('tagTo').textContent=ready?tagText(data.to):'…';
   $('scene').hidden=false;$('opened').hidden=true;$('lost').hidden=true;
-  if(data.img){const pre=new Image();pre.src=data.img}
+  PRE=null;if(data.img){const im=new Image();im.decoding='async';im.src=data.img;if(im.decode)im.decode().catch(()=>{});PRE={src:data.img,im}}
   mPrepare(data.nhac);
 }
 $('replay').onclick=()=>{reset();window.scrollTo(0,0)};
