@@ -109,7 +109,7 @@ header{display:flex;justify-content:space-between;align-items:center;height:56px
   background-image:radial-gradient(120% 60% at 0 0,rgba(255,255,255,.7),transparent 60%),radial-gradient(90% 50% at 100% 100%,rgba(255,200,150,.18),transparent 70%);
   box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.06),0 0 60px var(--halo)}
 .photo{position:relative;width:100%;aspect-ratio:4/5;max-height:62vh;border-radius:13px;overflow:hidden;background:#241a26}
-.photo>img,.photo>canvas.pic{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.photo>img,.photo>canvas.pic{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 38%;display:block}
 #foil{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;transition:opacity .7s}
 .swipe{position:absolute;left:50%;top:62%;font-size:30px;pointer-events:none;animation:swipe 2s ease-in-out infinite;filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
 @keyframes swipe{0%,100%{transform:translate(-80px,0) rotate(-12deg)}50%{transform:translate(40px,-14px) rotate(8deg)}}
@@ -148,6 +148,8 @@ footer span{color:var(--accent)}
 .deck>.card{flex:0 0 100%;box-sizing:border-box;scroll-snap-align:center;scroll-snap-stop:always}
 .card.more .msg{min-height:0;margin-top:16px}
 .card.more .photo{background:#241a26}
+.photo>.bg{position:absolute;inset:-28px;background:center/cover no-repeat;filter:blur(22px) brightness(.72) saturate(1.15);display:none;pointer-events:none}
+.photo.blurfill>.bg{display:block}
 .card.more.txt{display:flex;flex-direction:column;justify-content:center;text-align:center;padding:28px 22px}
 .card.more.txt .msg{font-size:32px;line-height:1.3;margin:0}
 .card.more.txt::before,.card.more.txt::after{content:"♥";display:block;color:var(--accent,#ff7a1a);opacity:.55;font-size:22px;margin:14px 0}
@@ -156,7 +158,19 @@ footer span{color:var(--accent)}
 .pager i.on{background:#fff;transform:scale(1.35);box-shadow:0 0 8px rgba(255,255,255,.55)}
 .swh{margin:-6px 0 0;text-align:center;font-size:14px;font-weight:600;color:var(--fg,#f2ece4);opacity:.85;animation:swh 1.6s ease-in-out infinite}
 .swh b{display:inline-block;font-size:18px}
-@keyframes swh{50%{transform:translateX(-6px)}}   /* + bỏ nút "Mở hết ảnh" (huynh): cào ~55 % thì ảnh tự hiện hết */
+@keyframes swh{50%{transform:translateX(-6px)}}
+/* THIỆP CỐ ĐỊNH CHIỀU CAO theo màn hình (huynh 26/11: không giật khi chữ gõ ra, mọi trang cao bằng nhau).
+   Chỉ áp khi màn đủ cao (dọc); xoay ngang / màn thấp giữ kiểu cuộn tự nhiên. */
+@media (min-height:501px){
+  body.cardmode .wrap{height:100vh;height:100svh;min-height:0;padding-bottom:max(10px,env(safe-area-inset-bottom,0px))}
+  body.cardmode #recv{min-height:0}
+  body.cardmode .opened{flex:1;min-height:0;padding:0;gap:0}
+  body.cardmode .deck{flex:1 1 auto;min-height:0;max-height:900px;box-sizing:border-box;padding-bottom:26px}
+  body.cardmode .deck>.card{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  body.cardmode .card .photo{flex:1 1 0;min-height:110px;aspect-ratio:auto;max-height:none}
+  body.cardmode .card .to,body.cardmode .card .msg,body.cardmode .card .sig{flex:0 0 auto}
+  body.cardmode .pager{margin-top:-14px}
+}   /* + bỏ nút "Mở hết ảnh" (huynh): cào ~55 % thì ảnh tự hiện hết */
 header{display:none!important}   /* "trên cũng vậy": bỏ chữ PEAKER. TAP + nút nhạc nhỏ (nút to "Chạm để bật nhạc" vẫn hiện khi máy chặn tiếng) */
 .wrap{box-sizing:border-box;padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
 /* điện thoại xoay ngang / màn thấp: thu nhỏ hộp + chữ để thấy đủ hộp và dòng "Chạm vào hộp quà" không phải cuộn */
@@ -516,17 +530,16 @@ function openGift(inGesture){
 
 /* ================= thiệp ================= */
 function showCard(){
-  $('scene').hidden=true;const op=$('opened');op.hidden=false;window.scrollTo(0,0);M.shown=true;pill();
-  const ph=$('photo');[...ph.querySelectorAll('img,canvas.pic')].forEach(n=>n.remove());
-  let pic;
-  if(data.img){pic=new Image();pic.alt='Ảnh người tặng gửi bạn';pic.src=data.img;pic.decoding='async'}else pic=samplePhoto();
-  ph.insertBefore(pic,ph.firstChild);
+  $('scene').hidden=true;const op=$('opened');op.hidden=false;document.body.classList.add('cardmode');window.scrollTo(0,0);M.shown=true;pill();
+  const ph=$('photo');[...ph.querySelectorAll('img,canvas.pic,.bg')].forEach(n=>n.remove());
+  if(data.img)addPhoto(ph,data.img,'Ảnh người tặng gửi bạn');else ph.insertBefore(samplePhoto(),ph.firstChild);
   $('to').textContent=tagText(data.to);$('sig').textContent=data.sig;$('sig').classList.remove('show');
   const sg=$('song');sg.hidden=!data.song;sg.href=data.song||'#';
   ['react','after','cta','ytWrap'].forEach(id=>$(id).classList.remove('show'));
   $('ytWrap').hidden=!data.yt;
-  initFoil();
   buildMore();
+  fitAll();     // chừa sẵn chỗ cho lời nhắn (đủ cả câu) + tự co chữ nếu dài → thiệp không cao lên khi chữ gõ ra
+  initFoil();   // sau fitAll: kích thước ảnh đã chốt
   const card=$('card');
   if(!reduce&&card.animate)card.animate([{opacity:0,transform:'translateY(38vh) scale(.42) rotate(-5deg)'},{opacity:1,offset:.3},{opacity:1,transform:'none'}],{duration:950,easing:'cubic-bezier(.16,1.12,.3,1)'});
   typeMsg(reduce?0:1000);
@@ -546,7 +559,7 @@ function buildMore(){
   [...deck.querySelectorAll('.card.more')].forEach(n=>n.remove());
   more.forEach((p,i)=>{
     const c=document.createElement('article');c.className='card more';c.setAttribute('aria-label','Trang '+(i+2)+'/'+(more.length+1));
-    if(p.img){const ph=document.createElement('div');ph.className='photo';const im=new Image();im.alt='Ảnh '+(i+2);im.decoding='async';im.src=p.img;ph.appendChild(im);c.appendChild(ph)}
+    if(p.img){const ph=document.createElement('div');ph.className='photo';c.appendChild(ph);addPhoto(ph,p.img,'Ảnh '+(i+2))}
     if(p.msg){const m=document.createElement('p');m.className='msg';m.textContent=p.msg;c.appendChild(m)}
     if(!p.img)c.classList.add('txt');   // trang chỉ có chữ: chữ to, nằm giữa thiệp
     deck.appendChild(c);
@@ -556,6 +569,37 @@ function buildMore(){
   for(let i=0;i<=more.length&&more.length;i++)pg.appendChild(document.createElement('i'));
   pageDots();
 }
+/* ẢNH KHÔNG MÉO, KHÔNG MẤT NỘI DUNG (huynh 26/11): khung ảnh co giãn theo máy. Khung gần tỉ lệ ảnh (lệch < ~17 %) → phủ đầy
+   (cắt nhẹ, ưu tiên phần trên-giữa); lệch nhiều → hiện ĐỦ 100 % ảnh, chỗ trống phủ chính ảnh đó làm mờ (kiểu TikTok/Instagram). */
+function addPhoto(ph,src,alt){
+  const bg=document.createElement('div');bg.className='bg';bg.style.backgroundImage='url("'+src+'")';
+  const im=new Image();im.alt=alt;im.decoding='async';im.onload=()=>fitPhoto(ph);im.src=src;
+  ph.insertBefore(im,ph.firstChild);ph.insertBefore(bg,im);return im;
+}
+function fitPhoto(ph){
+  const im=ph.querySelector(':scope>img');if(!im||!im.naturalWidth||!ph.clientHeight)return;
+  const close=Math.abs(Math.log((ph.clientWidth/ph.clientHeight)/(im.naturalWidth/im.naturalHeight)))<0.16;
+  im.style.objectFit=close?'cover':'contain';ph.classList.toggle('blurfill',!close);
+}
+const fitPhotos=()=>document.querySelectorAll('#deck .photo').forEach(fitPhoto);
+/* co chữ cho vừa: khối chữ ≤ ~50 % chiều cao thiệp (trang chỉ chữ: gần hết thiệp); giữ chỗ bằng min-height */
+const fixedMode=()=>document.body.classList.contains('cardmode')&&innerHeight>500;
+function fitMsg(m,full,base,maxH){
+  m.style.minHeight='';m.style.fontSize='';m.textContent=full;
+  let fs=base;m.style.fontSize=fs+'px';
+  if(fixedMode())while(m.offsetHeight>maxH&&fs>16){fs-=1;m.style.fontSize=fs+'px'}
+  m.style.minHeight=m.offsetHeight+'px';
+}
+function fitAll(){
+  const card=$('card'),H=card.clientHeight,fixed=fixedMode();
+  const extra=($('to').offsetHeight+28)+($('sig').offsetHeight+10)+24;
+  fitMsg($('msg'),String(data.msg).normalize('NFC'),27,fixed?Math.max(60,H*.5-extra):1e9);
+  document.querySelectorAll('#deck .card.more').forEach(c=>{const m=c.querySelector('.msg');if(!m)return;
+    const txt=c.classList.contains('txt');fitMsg(m,m.textContent,txt?32:27,fixed?(txt?c.clientHeight-130:Math.max(60,c.clientHeight*.38)):1e9)});
+  fitPhotos();
+}
+addEventListener('resize',()=>{if(!S.opened||!document.body.classList.contains('cardmode'))return;
+  const m=$('msg'),cur=m.textContent;fitAll();if(S.typing)m.textContent=cur;});
 function pageDots(){const deck=$('deck'),n=Math.round(deck.scrollLeft/Math.max(1,deck.clientWidth-16));
   [...$('pager').children].forEach((d,i)=>d.classList.toggle('on',i===n));if(n>0)$('swh').hidden=true}
 $('deck').addEventListener('scroll',pageDots,{passive:true});
@@ -661,7 +705,7 @@ function loadYT(){
 /* ================= về trạng thái hộp đóng ================= */
 function reset(){
   S.timers.forEach(clearTimeout);S.timers=[];clearInterval(S.typing);S.typing=null;
-  S.taps=0;S.opened=false;S.pending=false;
+  S.taps=0;S.opened=false;S.pending=false;document.body.classList.remove('cardmode');
   mStop(true);M.shown=false;pill();
   document.body.dataset.box=data.box;
   [lid,gift,$('rays'),$('scene'),$('card')].forEach(el=>{if(el.getAnimations)el.getAnimations().forEach(a=>a.cancel())});
