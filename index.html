@@ -559,9 +559,10 @@ function buildMore(){
   [...deck.querySelectorAll('.card.more')].forEach(n=>n.remove());
   more.forEach((p,i)=>{
     const c=document.createElement('article');c.className='card more';c.setAttribute('aria-label','Trang '+(i+2)+'/'+(more.length+1));
-    if(p.img){const ph=document.createElement('div');ph.className='photo';c.appendChild(ph);addPhoto(ph,p.img,'Ảnh '+(i+2))}
+    if(p.vid){const ph=document.createElement('div');ph.className='photo';c.appendChild(ph);addVideo(ph,p,i+2)}
+    else if(p.img){const ph=document.createElement('div');ph.className='photo';c.appendChild(ph);addPhoto(ph,p.img,'Ảnh '+(i+2))}
     if(p.msg){const m=document.createElement('p');m.className='msg';m.textContent=p.msg;c.appendChild(m)}
-    if(!p.img)c.classList.add('txt');   // trang chỉ có chữ: chữ to, nằm giữa thiệp
+    if(!p.img&&!p.vid)c.classList.add('txt');   // trang chỉ có chữ: chữ to, nằm giữa thiệp
     deck.appendChild(c);
   });
   deck.scrollLeft=0;
@@ -577,10 +578,29 @@ function addPhoto(ph,src,alt){
   ph.insertBefore(im,ph.firstChild);ph.insertBefore(bg,im);return im;
 }
 function fitPhoto(ph){
-  const im=ph.querySelector(':scope>img');if(!im||!im.naturalWidth||!ph.clientHeight)return;
-  const close=Math.abs(Math.log((ph.clientWidth/ph.clientHeight)/(im.naturalWidth/im.naturalHeight)))<0.16;
+  const im=ph.querySelector(':scope>img,:scope>video');if(!im||!ph.clientHeight)return;
+  const nw=im.naturalWidth||im.videoWidth||+im.dataset.w||0,nh=im.naturalHeight||im.videoHeight||+im.dataset.h||0;if(!nw||!nh)return;
+  const close=Math.abs(Math.log((ph.clientWidth/ph.clientHeight)/(nw/nh)))<0.16;
   im.style.objectFit=close?'cover':'contain';ph.classList.toggle('blurfill',!close);
 }
+/* trang VIDEO: tệp m/<mã>-<n>.bin = 12 byte iv + bản mã AES-GCM (khoá móc, dữ liệu kèm "<mã>:<n>");
+   giải mã trên máy người nhận → phát không tiếng, lặp, chỉ chạy khi đang ở trang đó */
+function addVideo(ph,p,n){
+  if(p.poster){const bg=document.createElement('div');bg.className='bg';bg.style.backgroundImage='url("'+p.poster+'")';ph.appendChild(bg)}
+  const v=document.createElement('video');v.muted=true;v.defaultMuted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');
+  v.preload='none';if(p.poster)v.poster=p.poster;v.dataset.w=p.vw;v.dataset.h=p.vh;v.dataset.src=p.vid;v.dataset.n=n;
+  v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block';
+  v.addEventListener('loadedmetadata',()=>fitPhoto(ph));ph.appendChild(v);
+}
+async function loadVid(v){
+  if(v.dataset.state)return;v.dataset.state='loading';
+  try{if(!VKEY)throw 0;const buf=await (await fetch(v.dataset.src,{cache:'force-cache'})).arrayBuffer();
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(buf,0,12),additionalData:new TextEncoder().encode(VMA+':'+v.dataset.n)},VKEY,new Uint8Array(buf,12));
+    v.src=URL.createObjectURL(new Blob([pt],{type:'video/mp4'}));v.dataset.state='ok';pageDots();
+  }catch(e){v.dataset.state='bad'}
+}
+function playVisible(n){document.querySelectorAll('#deck video').forEach(v=>{const on=v.closest('.card')===$('deck').children[n];
+  if(on){if(v.dataset.state==='ok'){const q=v.play();if(q&&q.catch)q.catch(()=>{})}else loadVid(v)}else if(!v.paused)v.pause()})}
 const fitPhotos=()=>document.querySelectorAll('#deck .photo').forEach(fitPhoto);
 /* co chữ cho vừa: khối chữ ≤ ~50 % chiều cao thiệp (trang chỉ chữ: gần hết thiệp); giữ chỗ bằng min-height */
 const fixedMode=()=>document.body.classList.contains('cardmode')&&innerHeight>500;
@@ -602,13 +622,15 @@ addEventListener('resize',()=>{if(!S.opened||!document.body.classList.contains('
   const m=$('msg'),cur=m.textContent;fitAll();if(S.typing)m.textContent=cur;});
 function pageDots(){const deck=$('deck'),n=Math.round(deck.scrollLeft/Math.max(1,deck.clientWidth-16));
   [...$('pager').children].forEach((d,i)=>d.classList.toggle('on',i===n));if(n>0)$('swh').hidden=true;
+  playVisible(n);
   const c=deck.children[n];   // trang vuốt tới lần đầu: ảnh hiện từ mờ sang nét + chút bụi vàng
-  if(n>0&&c&&!c.dataset.seen){c.dataset.seen='1';const im=c.querySelector('.photo>img');
+  if(n>0&&c&&!c.dataset.seen){c.dataset.seen='1';const im=c.querySelector('.photo>img,.photo>video');
     if(im&&im.animate&&!reduce){im.animate([{filter:'blur(14px) brightness(1.25) saturate(.7)',transform:'scale(1.1)'},{filter:'none',transform:'scale(1)'}],{duration:1000,easing:'cubic-bezier(.2,.8,.2,1)'});
       const r=im.getBoundingClientRect();if(r.width)sparks(r.left+r.width/2,r.top+r.height/2,weak?6:12,200)}}}
 $('deck').addEventListener('scroll',pageDots,{passive:true});
 function done(){
   $('sig').classList.add('show');
+  document.querySelectorAll('#deck video').forEach(v=>loadVid(v));   // tải + giải mã video sẵn, vuốt tới là chạy ngay
   if((data.more||[]).length&&Math.round($('deck').scrollLeft)<10)later(()=>{$('swh').hidden=false},reduce?0:600);
   if(data.yt)loadYT();
   ['react','ytWrap','after','cta'].forEach((id,i)=>later(()=>$(id).classList.add('show'),reduce?0:300+i*180));
@@ -761,14 +783,17 @@ function norm(j){
     ys:j.ys==null||j.ys===''?(j.yt?0:DEFYS[nh]||0):Math.max(0,Math.min(36000,parseInt(j.ys,10)||0)),
     nhac:/^[a-z0-9-]{1,40}$/.test(nh)?nh:'',box:BOXES[bx]?bx:'cam',
     more:(Array.isArray(j.more)?j.more:[]).slice(0,9).map(p=>{const pi=String(p&&p.img||'');
-      return{img:/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(pi)||/^m\/[a-z0-9-]{4,24}\.jpg$/.test(pi)?pi:null,msg:Array.from(String(p&&p.msg||'')).slice(0,220).join('')}}).filter(p=>p.img||p.msg)};
+      const pv=String(p&&p.vid||''),po=String(p&&p.poster||'');
+      return{img:/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(pi)||/^m\/[a-z0-9-]{4,24}\.jpg$/.test(pi)?pi:null,msg:Array.from(String(p&&p.msg||'')).slice(0,220).join(''),
+        vid:/^m\/[a-z0-9]{4,16}-\d{1,2}\.bin$/.test(pv)?pv:null,poster:/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(po)?po:null,vw:+p.vw||0,vh:+p.vh||0}}).filter(p=>p.img||p.msg||p.vid)};
 }
 /* lời nhắn mã hoá: khoá nằm sau dấu # của link chip (không bao giờ gửi lên máy chủ) */
+let VKEY=null,VMA='';
 async function unseal(j,k){
   const h=location.hash.slice(1);
   if(!/^[A-Za-z0-9_-]{22}$/.test(h)||!(window.crypto&&crypto.subtle))throw 0;
   const b=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
-  const key=await crypto.subtle.importKey('raw',b(h),'AES-GCM',false,['decrypt']);
+  const key=await crypto.subtle.importKey('raw',b(h),'AES-GCM',false,['decrypt']);VKEY=key;VMA=k;
   const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b(j.iv),additionalData:new TextEncoder().encode(k)},key,b(j.ct));
   return JSON.parse(new TextDecoder().decode(pt));
 }
