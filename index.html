@@ -601,7 +601,11 @@ function fitAll(){
 addEventListener('resize',()=>{if(!S.opened||!document.body.classList.contains('cardmode'))return;
   const m=$('msg'),cur=m.textContent;fitAll();if(S.typing)m.textContent=cur;});
 function pageDots(){const deck=$('deck'),n=Math.round(deck.scrollLeft/Math.max(1,deck.clientWidth-16));
-  [...$('pager').children].forEach((d,i)=>d.classList.toggle('on',i===n));if(n>0)$('swh').hidden=true}
+  [...$('pager').children].forEach((d,i)=>d.classList.toggle('on',i===n));if(n>0)$('swh').hidden=true;
+  const c=deck.children[n];   // trang vuốt tới lần đầu: ảnh hiện từ mờ sang nét + chút bụi vàng
+  if(n>0&&c&&!c.dataset.seen){c.dataset.seen='1';const im=c.querySelector('.photo>img');
+    if(im&&im.animate&&!reduce){im.animate([{filter:'blur(14px) brightness(1.25) saturate(.7)',transform:'scale(1.1)'},{filter:'none',transform:'scale(1)'}],{duration:1000,easing:'cubic-bezier(.2,.8,.2,1)'});
+      const r=im.getBoundingClientRect();if(r.width)sparks(r.left+r.width/2,r.top+r.height/2,weak?6:12,200)}}}
 $('deck').addEventListener('scroll',pageDots,{passive:true});
 function done(){
   $('sig').classList.add('show');
@@ -633,9 +637,9 @@ const foil=$('foil'),fx2=foil.getContext('2d');const GX=14,GY=18;
 const SC={cells:new Uint8Array(GX*GY),hit:0,on:false,last:null,rect:null,done:false};
 function initFoil(){
   SC.cells.fill(0);SC.hit=0;SC.done=false;SC.on=false;SC.anim=false;
-  foil.hidden=false;foil.style.opacity='1';$('allbtn').hidden=false;$('swipe').hidden=reduce;
+  foil.hidden=false;foil.style.opacity='1';$('allbtn').hidden=true;$('swipe').hidden=true;
   paintFoil();
-  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if(!SC.hit&&!SC.done&&!$('opened').hidden)paintFoil()});
+  later(()=>sweep(.85,1),reduce?0:1150);   // huynh 26/11: không bắt vuốt nữa — ảnh TỰ hiện (vệt sáng quét + bụi vàng + mờ sang nét)
 }
 function paintFoil(){
   const ph=$('photo'),d=Math.min(2,devicePixelRatio||1),w=ph.offsetWidth||300,h=ph.offsetHeight||375;
@@ -647,9 +651,6 @@ function paintFoil(){
   x.globalAlpha=.09;x.fillStyle='#fff';for(let i=-foil.height;i<foil.width;i+=26*d){x.beginPath();x.moveTo(i,0);x.lineTo(i+10*d,0);x.lineTo(i+10*d+foil.height,foil.height);x.lineTo(i+foil.height,foil.height);x.fill()}
   x.globalAlpha=.8;for(let i=0;i<34;i++){const sx=Math.random()*foil.width,sy=Math.random()*foil.height,s=(1+Math.random()*3)*d;x.fillRect(sx-s,sy-.5*d,s*2,d);x.fillRect(sx-.5*d,sy-s,d,s*2)}
   x.globalAlpha=1;x.fillStyle=v('--fink');x.textAlign='center';x.textBaseline='middle';
-  heartPath(x,foil.width/2,foil.height*.36,34*d);x.globalAlpha=.55;x.fill();x.globalAlpha=1;
-  x.font=`700 ${17*d}px "Be Vietnam Pro",system-ui,sans-serif`;x.fillText('Vuốt nhẹ để mở ảnh',foil.width/2,foil.height*.5);
-  x.font=`400 ${13*d}px "Be Vietnam Pro",system-ui,sans-serif`;x.globalAlpha=.75;x.fillText('chạm hoặc vuốt một cái thôi',foil.width/2,foil.height*.5+24*d);x.globalAlpha=1;
 }
 function fpt(e){const r=SC.rect;return{x:e.clientX-r.left,y:e.clientY-r.top}}
 function scratch(a,b){
