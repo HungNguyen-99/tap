@@ -244,13 +244,23 @@ const k=new URLSearchParams(location.search).get('k');
 if(k!==null){
   $('tabs').hidden=true;$('open').disabled=true;
   if(!/^[a-z0-9]{4,16}$/.test(k)){lost();}
-  else fetch('m/'+k+'.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>{
+  else fetch('m/'+k+'.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>j.ct?unseal(j,k):j).then(j=>{
+    const im=String(j.img||'');
     data={to:String(j.to||'Gửi bạn'),msg:String(j.msg||'…'),sig:String(j.sig||''),
-      img:/^m\/[a-z0-9]{4,16}\.jpg$/.test(j.img||'')?j.img:null,
+      img:/^m\/[a-z0-9]{4,16}\.jpg$/.test(im)||/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(im)?im:null,
       song:/^https:\/\//i.test(j.song||'')?j.song:''};
     if(data.img){const pre=new Image();pre.src=data.img}   // tải ảnh trước khi bấm mở
     $('open').disabled=false;
   }).catch(lost);
+}
+/* lời nhắn mã hoá: khoá nằm sau dấu # của link chip (không bao giờ gửi lên máy chủ) */
+async function unseal(j,k){
+  const h=location.hash.slice(1);
+  if(!/^[A-Za-z0-9_-]{22}$/.test(h)||!(window.crypto&&crypto.subtle))throw 0;
+  const b=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+  const key=await crypto.subtle.importKey('raw',b(h),'AES-GCM',false,['decrypt']);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b(j.iv),additionalData:new TextEncoder().encode(k)},key,b(j.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
 }
 function lost(){$('intro').hidden=true;$('lost').hidden=false}
 })();
